@@ -222,7 +222,6 @@ class MainWindow(QMainWindow):
         w.error.connect(w.deleteLater)
 
         def _cleanup() -> None:
-            nonlocal t
             self._rb_thread = None
             self._rb_worker = None
             t.deleteLater()
