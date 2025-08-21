@@ -444,7 +444,12 @@ class MainWindow(QMainWindow):
         self.playback.handle_user_toggled(playing)
 
     def _on_playback_error(self, msg: str) -> None:
-        html = f"<span style='color:#e57373; font-weight:bold;'>⚠ 再生できませんでした: {msg}</span>"
+        html = (
+            "<span style='color:#e57373; font-weight:bold;'>"
+            "⚠ 再生できませんでした: "
+            + msg
+            + "</span>"
+        )
         self.detail.set_program(self.detail.title.text(), html, None)
         self.statusBar().showMessage(f"Playback error: {msg}", 7000)
 
