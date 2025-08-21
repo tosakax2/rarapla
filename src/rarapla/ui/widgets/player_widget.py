@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from rarapla.services.player_service import PlayerService
+from rarapla.config import AUDIO_DEFAULT_VOLUME, AUDIO_MAX_VOLUME, AUDIO_MIN_VOLUME
 
 
 class PlayerWidget(QWidget):
@@ -29,9 +30,9 @@ class PlayerWidget(QWidget):
         dev_row.addWidget(self.dev_combo, 1)
         self.vol_label = QLabel("Volume:")
         self.vol = QSlider(Qt.Horizontal)
-        self.vol.setRange(0, 100)
-        self.vol.setValue(33)
-        self.svc.set_volume(33)
+        self.vol.setRange(AUDIO_MIN_VOLUME, AUDIO_MAX_VOLUME)
+        self.vol.setValue(AUDIO_DEFAULT_VOLUME)
+        self.svc.set_volume(AUDIO_DEFAULT_VOLUME)
         vol_row = QHBoxLayout()
         vol_row.addWidget(self.vol_label)
         vol_row.addWidget(self.vol, 1)
