@@ -10,12 +10,8 @@ class SmoothScrollMixin:
         props = QScroller.scroller(self.viewport()).scrollerProperties()
         p = QScrollerProperties(props)
         p.setScrollMetric(QScrollerProperties.DecelerationFactor, 0.1)
-        p.setScrollMetric(
-            QScrollerProperties.OvershootDragResistanceFactor, 0.15
-        )
-        p.setScrollMetric(
-            QScrollerProperties.OvershootScrollDistanceFactor, 0.15
-        )
+        p.setScrollMetric(QScrollerProperties.OvershootDragResistanceFactor, 0.15)
+        p.setScrollMetric(QScrollerProperties.OvershootScrollDistanceFactor, 0.15)
         p.setScrollMetric(QScrollerProperties.FrameRate, QScrollerProperties.Fps60)
         QScroller.scroller(self.viewport()).setScrollerProperties(p)
         self._anim = QPropertyAnimation(self.verticalScrollBar(), b"value", self)
