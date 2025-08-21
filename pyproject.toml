@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rarapla"
+version = "0.1.0"
+description = "ミニマルなFMラジオプレイヤー"
+authors = [
+  { name = "tosakax2", email = "tosakax2@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+  "aiohttp",
+  "PySide6",
+  "qdarkstyle",
+  "requests",
+  "streamlink",
+]
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "flake8",
+  "mypy",
+  "types-requests",
+  "pytest",
+]
+
+[project.scripts]
+rarapla = "rarapla.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+exclude = "(^|/)(build|dist|\\.eggs|\\.venv|data)/|^tests/|^src/rarapla/ui/|^src/rarapla/proxy/"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q"
+testpaths = ["tests"]

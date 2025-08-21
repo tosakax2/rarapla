@@ -1,0 +1,21 @@
+[
+  {
+    "label": "Japan",
+    "mode": "jp"
+  },
+  {
+    "label": "J-POP",
+    "mode": "tag",
+    "query": "jpop"
+  },
+  {
+    "label": "Jazz",
+    "mode": "tag",
+    "query": "jazz"
+  },
+  {
+    "label": "Vocaloid",
+    "mode": "tag",
+    "query": "vocaloid"
+  }
+]
