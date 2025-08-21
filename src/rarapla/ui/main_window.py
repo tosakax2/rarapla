@@ -16,6 +16,7 @@ from rarapla.data.radiko_client import RadikoClient
 from rarapla.data.radio_browser_client import RadioBrowserClient
 from rarapla.models.channel import Channel
 from rarapla.ui.controllers.now_refresher import NowRefresher
+from rarapla.config import NOW_REFRESH_INTERVAL_MS
 from rarapla.ui.controllers.playback_controller import PlaybackController
 from rarapla.ui.widgets.channel_card import ChannelCard
 from rarapla.ui.widgets.detail_panel import DetailPanel
@@ -86,7 +87,7 @@ class MainWindow(QMainWindow):
         self._build_ui()
         self._connect_signals()
         self.playback = PlaybackController(self.player, self.proxy_base)
-        self.now = NowRefresher(self.client, interval_ms=5000)
+        self.now = NowRefresher(self.client, interval_ms=NOW_REFRESH_INTERVAL_MS)
         self.now.updated.connect(self._apply_now_diff)
         self.now.error.connect(self._on_channel_refresh_error)
         self.now.start()

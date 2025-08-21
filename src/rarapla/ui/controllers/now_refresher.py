@@ -1,13 +1,16 @@
 from PySide6.QtCore import QObject, QThread, QTimer, Signal
 from rarapla.data.radiko_client import RadikoClient
 from rarapla.ui.workers.channel_fetch_worker import ChannelFetchWorker
+from rarapla.config import NOW_REFRESH_INTERVAL_MS
 
 
 class NowRefresher(QObject):
     updated = Signal(list)
     error = Signal(str)
 
-    def __init__(self, client: RadikoClient, interval_ms: int = 5000) -> None:
+    def __init__(
+        self, client: RadikoClient, interval_ms: int = NOW_REFRESH_INTERVAL_MS
+    ) -> None:
         super().__init__()
         self._client = client
         self._timer = QTimer(self)

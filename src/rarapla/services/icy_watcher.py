@@ -4,6 +4,14 @@ import aiohttp
 from collections.abc import Mapping
 from urllib.parse import parse_qs, unquote_plus
 
+from rarapla.config import (
+    ICY_CONNECT_TIMEOUT_SEC,
+    ICY_METADATA_BLOCK_SIZE,
+    ICY_READ_TIMEOUT_SEC,
+    ICY_RETRY_DELAY_SEC,
+    ICY_STOP_TIMEOUT_SEC,
+)
+
 
 class IcyWatcher(QThread):
     metaUpdated = Signal(str, dict)
@@ -73,7 +81,7 @@ class IcyWatcher(QThread):
         try:
             fut = asyncio.run_coroutine_threadsafe(_cancel(), loop)
             try:
-                fut.result(timeout=1.0)
+                fut.result(timeout=ICY_STOP_TIMEOUT_SEC)
             except Exception:
                 pass
         except Exception:
@@ -83,7 +91,9 @@ class IcyWatcher(QThread):
         headers = {"Icy-MetaData": "1"}
         if self._user_agent:
             headers["User-Agent"] = self._user_agent
-        timeout = aiohttp.ClientTimeout(sock_connect=10, sock_read=None)
+        timeout = aiohttp.ClientTimeout(
+            sock_connect=ICY_CONNECT_TIMEOUT_SEC, sock_read=None
+        )
         self._session = aiohttp.ClientSession(timeout=timeout)
         try:
             while self._running:
@@ -113,18 +123,21 @@ class IcyWatcher(QThread):
                         while self._running:
                             try:
                                 await asyncio.wait_for(
-                                    reader.readexactly(metaint), timeout=2.0
+                                    reader.readexactly(metaint),
+                                    timeout=ICY_READ_TIMEOUT_SEC,
                                 )
                                 length_byte = await asyncio.wait_for(
-                                    reader.readexactly(1), timeout=2.0
+                                    reader.readexactly(1),
+                                    timeout=ICY_READ_TIMEOUT_SEC,
                                 )
                             except (asyncio.TimeoutError, asyncio.IncompleteReadError):
                                 continue
-                            block_len = length_byte[0] * 16
+                            block_len = length_byte[0] * ICY_METADATA_BLOCK_SIZE
                             if block_len:
                                 try:
                                     block = await asyncio.wait_for(
-                                        reader.readexactly(block_len), timeout=2.0
+                                        reader.readexactly(block_len),
+                                        timeout=ICY_READ_TIMEOUT_SEC,
                                     )
                                 except (
                                     asyncio.TimeoutError,
@@ -141,7 +154,7 @@ class IcyWatcher(QThread):
                     return
                 except Exception as e:
                     self.networkError.emit(f"IcyWatcher: {e!r}")
-                    await asyncio.sleep(1.0)
+                    await asyncio.sleep(ICY_RETRY_DELAY_SEC)
                 finally:
                     self._resp = None
         finally:
