@@ -124,5 +124,6 @@ def main() -> None:
     proxy.stop()
     sys.exit(code)
 
+
 if __name__ == "__main__":
     main()
