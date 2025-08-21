@@ -1,7 +1,16 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtMultimedia import QAudioDevice, QMediaDevices, QMediaPlayer
-from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QPushButton, QSlider, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QComboBox,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QSlider,
+    QVBoxLayout,
+    QWidget,
+)
 from rarapla.services.player_service import PlayerService
+
 
 class PlayerWidget(QWidget):
     toggled = Signal(bool)
@@ -12,13 +21,13 @@ class PlayerWidget(QWidget):
         self.svc: PlayerService = PlayerService()
         layout = QVBoxLayout(self)
         self._media_devices = QMediaDevices(self)
-        self.dev_label = QLabel('Output:')
+        self.dev_label = QLabel("Output:")
         self.dev_combo = QComboBox()
         self.dev_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         dev_row = QHBoxLayout()
         dev_row.addWidget(self.dev_label)
         dev_row.addWidget(self.dev_combo, 1)
-        self.vol_label = QLabel('Volume:')
+        self.vol_label = QLabel("Volume:")
         self.vol = QSlider(Qt.Horizontal)
         self.vol.setRange(0, 100)
         self.vol.setValue(33)
@@ -27,7 +36,7 @@ class PlayerWidget(QWidget):
         vol_row.addWidget(self.vol_label)
         vol_row.addWidget(self.vol, 1)
         ctl = QHBoxLayout()
-        self.toggle_btn = QPushButton('Play')
+        self.toggle_btn = QPushButton("Play")
         self.toggle_btn.setCheckable(True)
         ctl.addWidget(self.toggle_btn)
         layout.addLayout(dev_row)
@@ -78,7 +87,9 @@ class PlayerWidget(QWidget):
         dev = self.dev_combo.itemData(index)
         if not isinstance(dev, QAudioDevice):
             return
-        was_playing = self.svc.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState
+        was_playing = (
+            self.svc.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState
+        )
         self.svc.set_output_device(dev)
         if was_playing:
             self.svc.play()
@@ -107,5 +118,5 @@ class PlayerWidget(QWidget):
     def _sync_toggle_to_state(self, playing: bool) -> None:
         self.toggle_btn.blockSignals(True)
         self.toggle_btn.setChecked(playing)
-        self.toggle_btn.setText('Stop' if playing else 'Play')
+        self.toggle_btn.setText("Stop" if playing else "Play")
         self.toggle_btn.blockSignals(False)

@@ -25,7 +25,7 @@ class RadikoResolver:
     def __init__(self) -> None:
         """Create a new resolver with a preconfigured Streamlink session."""
         self._session: Streamlink = Streamlink()
-        self._session.set_option('http-headers', {'User-Agent': USER_AGENT})
+        self._session.set_option("http-headers", {"User-Agent": USER_AGENT})
 
     def resolve_live(self, station_id: str) -> ResolvedStream | None:
         """Resolve the live stream for a station.
@@ -36,9 +36,9 @@ class RadikoResolver:
         Returns:
             The resolved stream information or ``None`` if not available.
         """
-        url = f'https://radiko.jp/#!/live/{station_id}'
+        url = f"https://radiko.jp/#!/live/{station_id}"
         streams = self._session.streams(url)
-        stream = streams.get('best')
+        stream = streams.get("best")
         if not stream:
             return None
         return ResolvedStream(station_id, stream.to_url())

@@ -4,6 +4,7 @@ from rarapla.config import USER_AGENT
 from rarapla.ui.widgets.player_widget import PlayerWidget
 from rarapla.services.icy_watcher import IcyWatcher
 
+
 class PlaybackController(QObject):
     streamTitleChanged = Signal(str, object)
     playbackError = Signal(str)
@@ -57,21 +58,30 @@ class PlaybackController(QObject):
             self.player.set_media(self._current_direct_url)
             self.player.svc.play()
 
-    def _build_local_m3u8(self, station_id: str, force: bool=False) -> str:
-        base = f'{self.proxy_base}/live/{station_id}.m3u8'
+    def _build_local_m3u8(self, station_id: str, force: bool = False) -> str:
+        base = f"{self.proxy_base}/live/{station_id}.m3u8"
         if force:
             import time
-            return f'{base}?t={int(time.time() * 1000)}'
+
+            return f"{base}?t={int(time.time() * 1000)}"
         return base
 
     def _refresh_stream(self) -> None:
         if not self._current_station:
             return
-        if self.player.svc.player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+        if (
+            self.player.svc.player.playbackState()
+            != QMediaPlayer.PlaybackState.PlayingState
+        ):
             return
         try:
             import requests
-            requests.post(f'{self.proxy_base}/clear_cache', json={'station': self._current_station}, timeout=2)
+
+            requests.post(
+                f"{self.proxy_base}/clear_cache",
+                json={"station": self._current_station},
+                timeout=2,
+            )
         except Exception:
             pass
 
@@ -81,7 +91,11 @@ class PlaybackController(QObject):
         md = self.player.svc.player.metaData()
         if md.isEmpty():
             return
-        title = self._first_non_empty(md.stringValue(QMediaMetaData.Title), md.stringValue(QMediaMetaData.Description), md.stringValue(QMediaMetaData.Comment)).strip()
+        title = self._first_non_empty(
+            md.stringValue(QMediaMetaData.Title),
+            md.stringValue(QMediaMetaData.Description),
+            md.stringValue(QMediaMetaData.Comment),
+        ).strip()
 
         def _val(name: str) -> str | None:
             key = getattr(QMediaMetaData, name, None)
@@ -94,23 +108,25 @@ class PlaybackController(QObject):
             if s:
                 s = s.strip()
             return s or None
+
         pairs: list[tuple[str, str]] = []
 
         def add(label: str, name: str) -> None:
             v = _val(name)
             if v:
                 pairs.append((label, v))
-        add('Title', 'Title')
-        add('Artist', 'Author')
-        add('Album', 'AlbumTitle')
-        add('AlbumArtist', 'AlbumArtist')
-        add('Genre', 'Genre')
-        add('Comment', 'Comment')
-        add('Description', 'Description')
-        add('Publisher', 'Publisher')
-        add('Language', 'Language')
-        add('Track', 'TrackNumber')
-        add('Date', 'Date')
+
+        add("Title", "Title")
+        add("Artist", "Author")
+        add("Album", "AlbumTitle")
+        add("AlbumArtist", "AlbumArtist")
+        add("Genre", "Genre")
+        add("Comment", "Comment")
+        add("Description", "Description")
+        add("Publisher", "Publisher")
+        add("Language", "Language")
+        add("Track", "TrackNumber")
+        add("Date", "Date")
         meta_map: dict[str, str] = {k: v for k, v in pairs}
         if title or meta_map:
             self.streamTitleChanged.emit(title, meta_map)
@@ -148,18 +164,23 @@ class PlaybackController(QObject):
     def _on_player_error(self, err: QMediaPlayer.Error, text: str) -> None:
         if err == QMediaPlayer.NoError:
             return
-        msg = text or '再生できませんでした'
+        msg = text or "再生できませんでした"
         self.playbackError.emit(msg)
 
     def _first_non_empty(self, *values: str | None) -> str:
         for v in values:
             if v and v.strip():
                 return v
-        return ''
+        return ""
 
     def _clear_proxy_cache(self, station_id: str) -> None:
         import requests
+
         try:
-            requests.post(f'{self.proxy_base}/clear_cache', json={'station': station_id}, timeout=2)
+            requests.post(
+                f"{self.proxy_base}/clear_cache",
+                json={"station": station_id},
+                timeout=2,
+            )
         except Exception:
             pass

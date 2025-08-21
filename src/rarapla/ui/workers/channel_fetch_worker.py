@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, Signal
 from rarapla.data.radiko_client import RadikoClient
 
+
 class ChannelFetchWorker(QObject):
     finished = Signal(list)
     error = Signal(str)

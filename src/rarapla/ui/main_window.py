@@ -2,7 +2,16 @@ import json
 import os
 from PySide6.QtCore import QThread, QTimer, Qt
 from PySide6.QtGui import QShowEvent
-from PySide6.QtWidgets import QComboBox, QGroupBox, QHBoxLayout, QListWidgetItem, QMainWindow, QMessageBox, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QComboBox,
+    QGroupBox,
+    QHBoxLayout,
+    QListWidgetItem,
+    QMainWindow,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+)
 from rarapla.data.radiko_client import RadikoClient
 from rarapla.data.radio_browser_client import RadioBrowserClient
 from rarapla.models.channel import Channel
@@ -15,8 +24,15 @@ from rarapla.ui.widgets.smooth_list import SmoothListWidget
 from rarapla.ui.workers.channel_fetch_worker import ChannelFetchWorker
 from rarapla.ui.workers.program_fetch_worker import ProgramFetchWorker
 from rarapla.ui.workers.rb_search_worker import RBSearchWorker
-_DEFAULT_RB_PRESETS: list[dict] = [{'label': 'Japan', 'mode': 'jp'}, {'label': 'J-POP', 'mode': 'tag', 'query': 'jpop'}, {'label': 'Jazz', 'mode': 'tag', 'query': 'jazz'}, {'label': 'Vocaloid', 'mode': 'tag', 'query': 'vocaloid'}]
-_PRESET_FILE = 'rb_presets.json'
+
+_DEFAULT_RB_PRESETS: list[dict] = [
+    {"label": "Japan", "mode": "jp"},
+    {"label": "J-POP", "mode": "tag", "query": "jpop"},
+    {"label": "Jazz", "mode": "tag", "query": "jazz"},
+    {"label": "Vocaloid", "mode": "tag", "query": "vocaloid"},
+]
+_PRESET_FILE = "rb_presets.json"
+
 
 class MainWindow(QMainWindow):
 
@@ -25,26 +41,36 @@ class MainWindow(QMainWindow):
         if not os.path.isfile(path):
             presets = _DEFAULT_RB_PRESETS.copy()
             try:
-                with open(path, 'w', encoding='utf-8') as f:
+                with open(path, "w", encoding="utf-8") as f:
                     json.dump(presets, f, ensure_ascii=False, indent=2)
             except Exception:
                 pass
             return presets
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f) or []
         except Exception:
             return _DEFAULT_RB_PRESETS.copy()
         out: list[dict] = []
         for it in data:
-            if isinstance(it, dict) and isinstance(it.get('label'), str) and (it.get('mode') in ('jp', 'tag')):
-                out.append({'label': it['label'].strip(), 'mode': it['mode'], 'query': (it.get('query') or '').strip() or None})
+            if (
+                isinstance(it, dict)
+                and isinstance(it.get("label"), str)
+                and (it.get("mode") in ("jp", "tag"))
+            ):
+                out.append(
+                    {
+                        "label": it["label"].strip(),
+                        "mode": it["mode"],
+                        "query": (it.get("query") or "").strip() or None,
+                    }
+                )
         return out or _DEFAULT_RB_PRESETS[:1]
 
     def __init__(self, proxy_host: str, proxy_port: int) -> None:
         super().__init__()
-        self.setWindowTitle('RaRaPla')
-        self.proxy_base = f'http://{proxy_host}:{proxy_port}'
+        self.setWindowTitle("RaRaPla")
+        self.proxy_base = f"http://{proxy_host}:{proxy_port}"
         self.client = RadikoClient()
         self.rb = RadioBrowserClient()
         self._rb_presets = self._load_rb_presets()
@@ -85,7 +111,7 @@ class MainWindow(QMainWindow):
         left_col.setContentsMargins(0, 0, 0, 0)
         left_col.setSpacing(12)
         left_col.addWidget(self.detail, 1)
-        player_box = QGroupBox('Player')
+        player_box = QGroupBox("Player")
         pb = QVBoxLayout(player_box)
         pb.setContentsMargins(8, 12, 8, 8)
         pb.addWidget(self.player)
@@ -96,12 +122,12 @@ class MainWindow(QMainWindow):
         self.list = SmoothListWidget()
         self.list.setSpacing(8)
         self.source_combo = QComboBox()
-        self.source_combo.addItem('radiko (area)')
+        self.source_combo.addItem("radiko (area)")
         for p in self._rb_presets:
             self.source_combo.addItem(f"RB: {p['label']}")
         head = QHBoxLayout()
         head.addWidget(self.source_combo)
-        list_box = QGroupBox('Channel')
+        list_box = QGroupBox("Channel")
         lb = QVBoxLayout(list_box)
         lb.setContentsMargins(8, 12, 8, 8)
         lb.addLayout(head)
@@ -117,6 +143,7 @@ class MainWindow(QMainWindow):
 
     def _fix_initial_size(self) -> None:
         from rarapla.config import WINDOW_DEFAULT_HEIGHT, WINDOW_MIN_HEIGHT
+
         self.setFixedWidth(self.width())
         self.resize(self.width(), WINDOW_DEFAULT_HEIGHT)
         if self.minimumHeight() < WINDOW_MIN_HEIGHT:
@@ -131,12 +158,12 @@ class MainWindow(QMainWindow):
         preset = self._rb_presets[idx - 1]
         self.now.stop()
         self._clear_list()
-        self._start_rb_search(mode=preset['mode'], query=preset.get('query'))
+        self._start_rb_search(mode=preset["mode"], query=preset.get("query"))
 
     def _populate(self) -> None:
         if self._populate_thread is not None:
             return
-        self.statusBar().showMessage('Loading channels...')
+        self.statusBar().showMessage("Loading channels...")
         self._populate_worker = ChannelFetchWorker(self.client)
         self._populate_thread = QThread(self)
         w = self._populate_worker
@@ -167,13 +194,13 @@ class MainWindow(QMainWindow):
             item.setData(Qt.UserRole, ch)
             self.list.addItem(item)
             self.list.setItemWidget(item, card)
-            card.setProperty('selected', False)
+            card.setProperty("selected", False)
             self._item_by_id[ch.id] = item
-        self.statusBar().showMessage('Channels loaded', 5000)
+        self.statusBar().showMessage("Channels loaded", 5000)
 
     def _on_channel_error(self, msg: str) -> None:
-        QMessageBox.warning(self, 'Error', msg)
-        self.statusBar().showMessage('Failed to load channels', 5000)
+        QMessageBox.warning(self, "Error", msg)
+        self.statusBar().showMessage("Failed to load channels", 5000)
 
     def _clear_list(self) -> None:
         self.list.clear()
@@ -182,7 +209,7 @@ class MainWindow(QMainWindow):
     def _start_rb_search(self, mode: str, query: str | None) -> None:
         if self._rb_thread is not None:
             return
-        self.statusBar().showMessage('Loading stations (Radio Browser)...')
+        self.statusBar().showMessage("Loading stations (Radio Browser)...")
         w = RBSearchWorker(self.rb, mode=mode, query=query, limit=100)
         t = QThread(self)
         w.moveToThread(t)
@@ -199,6 +226,7 @@ class MainWindow(QMainWindow):
             self._rb_thread = None
             self._rb_worker = None
             t.deleteLater()
+
         t.finished.connect(_cleanup)
         self._rb_thread = t
         self._rb_worker = w
@@ -212,19 +240,21 @@ class MainWindow(QMainWindow):
             item.setData(Qt.UserRole, ch)
             self.list.addItem(item)
             self.list.setItemWidget(item, card)
-            card.setProperty('selected', False)
+            card.setProperty("selected", False)
             self._item_by_id[ch.id] = item
-        self.statusBar().showMessage(f'RB: {len(channels)} stations', 5000)
+        self.statusBar().showMessage(f"RB: {len(channels)} stations", 5000)
 
     def _on_rb_error(self, msg: str) -> None:
-        QMessageBox.warning(self, 'RB Error', msg)
-        self.statusBar().showMessage('Radio Browser request failed', 5000)
+        QMessageBox.warning(self, "RB Error", msg)
+        self.statusBar().showMessage("Radio Browser request failed", 5000)
 
-    def _on_select(self, cur: QListWidgetItem | None, prev: QListWidgetItem | None) -> None:
+    def _on_select(
+        self, cur: QListWidgetItem | None, prev: QListWidgetItem | None
+    ) -> None:
         if prev:
             card = self.list.itemWidget(prev)
             if card:
-                card.setProperty('selected', False)
+                card.setProperty("selected", False)
                 card.style().unpolish(card)
                 card.style().polish(card)
                 card.update()
@@ -232,7 +262,7 @@ class MainWindow(QMainWindow):
             return
         card = self.list.itemWidget(cur)
         if card:
-            card.setProperty('selected', True)
+            card.setProperty("selected", True)
             card.style().unpolish(card)
             card.style().polish(card)
             card.update()
@@ -240,27 +270,27 @@ class MainWindow(QMainWindow):
         self._pending_channel = ch
         self._switch_timer.stop()
         self._switch_timer.start(self._switch_delay_ms)
-        if getattr(ch, 'stream_url', None):
+        if getattr(ch, "stream_url", None):
             self.detail.set_loading(ch.name)
         else:
-            self.detail.set_loading(ch.program_title or '')
+            self.detail.set_loading(ch.program_title or "")
 
     def _delayed_channel_switch(self) -> None:
         ch = self._pending_channel
         if not ch:
             return
         self._current_channel = ch
-        if getattr(ch, 'stream_url', None):
-            url = ch.stream_url or ''
+        if getattr(ch, "stream_url", None):
+            url = ch.stream_url or ""
             if url:
                 self.playback.prepare_direct(url)
                 try:
-                    if ch.id.startswith('rb:'):
+                    if ch.id.startswith("rb:"):
                         self.rb.notify_click(ch.id[3:])
                 except Exception:
                     pass
-                self.detail.set_program(ch.name, '', None)
-                self.statusBar().showMessage('Station loaded', 3000)
+                self.detail.set_program(ch.name, "", None)
+                self.statusBar().showMessage("Station loaded", 3000)
             return
         self.playback.set_current_station(ch.id)
         if self._prog_worker:
@@ -294,39 +324,45 @@ class MainWindow(QMainWindow):
         title = program.title if program and program.title else ch.program_title
         pieces: list[str] = []
         if program and program.pfm:
-            pieces.append(f'<b>出演:</b> {program.pfm}<br><br>')
+            pieces.append(f"<b>出演:</b> {program.pfm}<br><br>")
         if program and program.desc:
             pieces.append(program.desc)
-        desc_html = ''.join(pieces) if pieces else ''
+        desc_html = "".join(pieces) if pieces else ""
         img_url = None
         if program and program.image:
             img_url = program.image
         elif ch.program_image:
             img_url = ch.program_image
-        self.detail.set_program(title or '', desc_html, img_url)
-        self.statusBar().showMessage('Program loaded', 5000)
+        self.detail.set_program(title or "", desc_html, img_url)
+        self.statusBar().showMessage("Program loaded", 5000)
 
     def _on_program_error(self, msg: str) -> None:
-        self.detail.set_program('', None, None)
-        self.statusBar().showMessage(f'Failed to load program: {msg}', 5000)
+        self.detail.set_program("", None, None)
+        self.statusBar().showMessage(f"Failed to load program: {msg}", 5000)
 
     def _on_program_cancelled(self) -> None:
-        self.statusBar().showMessage('Program loading cancelled', 2000)
+        self.statusBar().showMessage("Program loading cancelled", 2000)
 
     def _on_channel_refresh_error(self, msg: str) -> None:
-        self.statusBar().showMessage(f'Channel refresh failed: {msg}', 3000)
+        self.statusBar().showMessage(f"Channel refresh failed: {msg}", 3000)
 
     def _apply_now_diff(self, channels: list) -> None:
         new_map: dict[str, object] = {ch.id: ch for ch in channels}
         cur_item = self.list.currentItem()
         cur_id = cur_item.data(Qt.UserRole).id if cur_item else None
-        cur_title_before = cur_item.data(Qt.UserRole).program_title or '' if cur_item else None
+        cur_title_before = (
+            cur_item.data(Qt.UserRole).program_title or "" if cur_item else None
+        )
         for sid, item in self._item_by_id.items():
             new_ch = new_map.get(sid)
             if not new_ch:
                 continue
             old_ch = item.data(Qt.UserRole)
-            if old_ch.name != new_ch.name or old_ch.program_title != new_ch.program_title or old_ch.logo_url != new_ch.logo_url:
+            if (
+                old_ch.name != new_ch.name
+                or old_ch.program_title != new_ch.program_title
+                or old_ch.logo_url != new_ch.logo_url
+            ):
                 item.setData(Qt.UserRole, new_ch)
                 card = self.list.itemWidget(item)
                 if isinstance(card, ChannelCard):
@@ -335,7 +371,7 @@ class MainWindow(QMainWindow):
             updated = self._item_by_id.get(cur_id)
             if updated:
                 ch_after = updated.data(Qt.UserRole)
-                cur_title_after = ch_after.program_title or ''
+                cur_title_after = ch_after.program_title or ""
                 if cur_title_before != cur_title_after:
                     self.detail.set_loading(cur_title_after)
                     self._request_program_detail(ch_after)
@@ -366,10 +402,17 @@ class MainWindow(QMainWindow):
         if not cur_item:
             return
         ch = cur_item.data(Qt.UserRole)
-        if not getattr(ch, 'stream_url', None):
+        if not getattr(ch, "stream_url", None):
             return
-        prog_title = (title or '').strip()
-        updated = Channel(id=ch.id, name=ch.name, logo_url=ch.logo_url, program_title=prog_title, program_image=ch.program_image, stream_url=ch.stream_url)
+        prog_title = (title or "").strip()
+        updated = Channel(
+            id=ch.id,
+            name=ch.name,
+            logo_url=ch.logo_url,
+            program_title=prog_title,
+            program_image=ch.program_image,
+            stream_url=ch.stream_url,
+        )
         cur_item.setData(Qt.UserRole, updated)
         card = self.list.itemWidget(cur_item)
         if isinstance(card, ChannelCard):
@@ -382,19 +425,21 @@ class MainWindow(QMainWindow):
         try:
             items = dict(meta).items()
         except Exception:
-            return ''
+            return ""
         rows: list[str] = []
         for k, v in items:
             ks = str(k).strip()
             vs = str(v).strip()
             if not ks or not vs:
                 continue
-            ks = ks.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-            vs = vs.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-            rows.append(f"<tr><td><b>{ks}</b></td><td style='padding-left:8px'>{vs}</td></tr>")
+            ks = ks.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            vs = vs.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            rows.append(
+                f"<tr><td><b>{ks}</b></td><td style='padding-left:8px'>{vs}</td></tr>"
+            )
         if not rows:
-            return ''
-        return "<table cellspacing='0' cellpadding='0'>" + ''.join(rows) + '</table>'
+            return ""
+        return "<table cellspacing='0' cellpadding='0'>" + "".join(rows) + "</table>"
 
     def _on_player_toggled(self, playing: bool) -> None:
         self.playback.handle_user_toggled(playing)
@@ -402,7 +447,7 @@ class MainWindow(QMainWindow):
     def _on_playback_error(self, msg: str) -> None:
         html = f"<span style='color:#e57373; font-weight:bold;'>⚠ 再生できませんでした: {msg}</span>"
         self.detail.set_program(self.detail.title.text(), html, None)
-        self.statusBar().showMessage(f'Playback error: {msg}', 7000)
+        self.statusBar().showMessage(f"Playback error: {msg}", 7000)
 
     def showEvent(self, e: QShowEvent) -> None:
         super().showEvent(e)

@@ -4,18 +4,25 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from rarapla.config import USER_AGENT
 
+
 class ImageLoader(QObject):
 
-    def __init__(self, parent: QObject | None=None) -> None:
+    def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._nam: QNetworkAccessManager = QNetworkAccessManager(self)
         self._reply: QNetworkReply | None = None
 
-    def load(self, url: str, on_done: Callable[[QPixmap], None], on_error: Callable[[], None] | None=None, scale_to_width: int | None=None) -> None:
+    def load(
+        self,
+        url: str,
+        on_done: Callable[[QPixmap], None],
+        on_error: Callable[[], None] | None = None,
+        scale_to_width: int | None = None,
+    ) -> None:
         self._cleanup_reply()
         req = QNetworkRequest()
         req.setUrl(QUrl(url))
-        req.setRawHeader(b'User-Agent', USER_AGENT.encode('utf-8'))
+        req.setRawHeader(b"User-Agent", USER_AGENT.encode("utf-8"))
         self._reply = self._nam.get(req)
 
         def _finished() -> None:
@@ -36,6 +43,7 @@ class ImageLoader(QObject):
             if scale_to_width and scale_to_width > 0:
                 pix = pix.scaledToWidth(scale_to_width)
             on_done(pix)
+
         self._reply.finished.connect(_finished)
 
     def cancel(self) -> None:

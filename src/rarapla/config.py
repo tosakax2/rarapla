@@ -1,13 +1,13 @@
 """Application-wide configuration constants."""
 
 USER_AGENT = (
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-    'AppleWebKit/537.36 (KHTML, like Gecko) '
-    'Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0'
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0"
 )
 
 # Proxy settings
-PROXY_HOST = '127.0.0.1'
+PROXY_HOST = "127.0.0.1"
 PROXY_PORT = 3032
 
 # Network

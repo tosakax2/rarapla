@@ -2,6 +2,7 @@ from PySide6.QtCore import QUrl
 from PySide6.QtMultimedia import QAudioDevice, QAudioOutput, QMediaPlayer
 from rarapla.config import AUDIO_MAX_VOLUME, AUDIO_MIN_VOLUME
 
+
 class PlayerService:
 
     def __init__(self) -> None:

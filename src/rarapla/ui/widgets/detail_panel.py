@@ -3,20 +3,21 @@ from PySide6.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QWidget
 from rarapla.ui.utils.image_loader import ImageLoader
 from rarapla.ui.widgets.smooth_area import SmoothScrollArea
 
+
 class DetailPanel(QGroupBox):
 
-    def __init__(self, parent: QWidget | None=None) -> None:
-        super().__init__('Detail', parent)
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__("Detail", parent)
         self._img_loader = ImageLoader(self)
-        self.title = QLabel('')
-        self.title.setObjectName('DetailTitle')
+        self.title = QLabel("")
+        self.title.setObjectName("DetailTitle")
         self.title.setWordWrap(True)
         self.title.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.image = QLabel()
         self.image.setAlignment(Qt.AlignCenter)
         self.image.setMinimumHeight(180)
         self.image.setVisible(False)
-        self.desc = QLabel('')
+        self.desc = QLabel("")
         self.desc.setWordWrap(True)
         self.desc.setTextFormat(Qt.RichText)
         self.desc.setTextInteractionFlags(Qt.TextBrowserInteraction)
@@ -37,13 +38,15 @@ class DetailPanel(QGroupBox):
         box.addWidget(self.scroll, 1)
 
     def set_loading(self, title_text: str) -> None:
-        self.title.setText(title_text or '')
-        self.desc.setText('読み込み中...')
+        self.title.setText(title_text or "")
+        self.desc.setText("読み込み中...")
         self._clear_image()
 
-    def set_program(self, title_text: str, desc_html: str | None, image_url: str | None) -> None:
-        self.title.setText(title_text or '')
-        self.desc.setText(desc_html or '')
+    def set_program(
+        self, title_text: str, desc_html: str | None, image_url: str | None
+    ) -> None:
+        self.title.setText(title_text or "")
+        self.desc.setText(desc_html or "")
         if image_url:
             self._load_image(image_url)
         else:
@@ -57,11 +60,16 @@ class DetailPanel(QGroupBox):
 
         def _done(pix):
             fixed = 340
-            scaled = pix if pix.width() == fixed else pix.scaledToWidth(fixed, Qt.SmoothTransformation)
+            scaled = (
+                pix
+                if pix.width() == fixed
+                else pix.scaledToWidth(fixed, Qt.SmoothTransformation)
+            )
             self.image.setPixmap(scaled)
             self.image.setFixedSize(fixed, scaled.height())
             self.image.setVisible(True)
 
         def _err():
             self._clear_image()
+
         self._img_loader.load(url, on_done=_done, on_error=_err, scale_to_width=340)

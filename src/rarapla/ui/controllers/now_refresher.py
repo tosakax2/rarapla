@@ -2,11 +2,12 @@ from PySide6.QtCore import QObject, QThread, QTimer, Signal
 from rarapla.data.radiko_client import RadikoClient
 from rarapla.ui.workers.channel_fetch_worker import ChannelFetchWorker
 
+
 class NowRefresher(QObject):
     updated = Signal(list)
     error = Signal(str)
 
-    def __init__(self, client: RadikoClient, interval_ms: int=5000) -> None:
+    def __init__(self, client: RadikoClient, interval_ms: int = 5000) -> None:
         super().__init__()
         self._client = client
         self._timer = QTimer(self)
@@ -38,6 +39,7 @@ class NowRefresher(QObject):
         def _err(msg: str) -> None:
             self.error.emit(msg)
             self._thread.quit()
+
         self._worker.finished.connect(_done)
         self._worker.error.connect(_err)
 
@@ -52,5 +54,6 @@ class NowRefresher(QObject):
                 self._busy = False
                 if t is not None:
                     t.deleteLater()
+
         self._thread.finished.connect(_cleanup)
         self._thread.start()

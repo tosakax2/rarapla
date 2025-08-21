@@ -21,7 +21,7 @@ from rarapla.data.radiko_resolver import RadikoResolver, ResolvedStream
 class RadikoProxyServer:
     """Proxy Radiko streams and rewrite playlist URLs."""
 
-    def __init__(self, host: str = '127.0.0.1', port: int = 3032) -> None:
+    def __init__(self, host: str = "127.0.0.1", port: int = 3032) -> None:
         """Initialize the proxy server.
 
         Args:
@@ -34,10 +34,10 @@ class RadikoProxyServer:
         self._app: web.Application = web.Application()
         self._app.add_routes(
             [
-                web.get('/live/{station}.m3u8', self.handle_master),
-                web.get('/seg', self.handle_seg),
-                web.get('/seg.{ext}', self.handle_seg),
-                web.post('/clear_cache', self.handle_clear_cache),
+                web.get("/live/{station}.m3u8", self.handle_master),
+                web.get("/seg", self.handle_seg),
+                web.get("/seg.{ext}", self.handle_seg),
+                web.post("/clear_cache", self.handle_clear_cache),
             ]
         )
         self._runner: web.AppRunner | None = None
@@ -49,67 +49,65 @@ class RadikoProxyServer:
 
     async def handle_master(self, request: web.Request) -> web.Response:
         """Rewrite the master playlist to point to this proxy."""
-        station = request.match_info['station']
+        station = request.match_info["station"]
         resolved = await self._ensure_resolved(station)
         if not resolved:
-            return web.Response(status=404, text='station not found')
+            return web.Response(status=404, text="station not found")
         assert self._session is not None
         try:
             async with self._session.get(
                 resolved.m3u8_url, timeout=HTTP_TIMEOUT
             ) as upstream:
                 if upstream.status != 200:
-                    return web.Response(
-                        status=upstream.status, text='upstream error'
-                    )
+                    return web.Response(status=upstream.status, text="upstream error")
                 text = await upstream.text()
         except asyncio.TimeoutError:
-            return web.Response(status=504, text='upstream timeout')
+            return web.Response(status=504, text="upstream timeout")
         except aiohttp.ClientError:
-            return web.Response(status=502, text='upstream error')
+            return web.Response(status=502, text="upstream error")
 
         base = self._base_url(resolved.m3u8_url)
         out_lines: list[str] = []
         for line in text.splitlines():
             s = line.strip()
-            if not s or s.startswith('#'):
+            if not s or s.startswith("#"):
                 out_lines.append(line)
                 continue
-            abs_url = s if '://' in s else urljoin(base, s)
+            abs_url = s if "://" in s else urljoin(base, s)
             path = urlparse(abs_url).path
-            ext = os.path.splitext(path)[1].lower().lstrip('.')
-            if ext not in ('m3u8', 'aac', 'ts', 'mp3', 'm4a'):
-                ext = 'bin'
+            ext = os.path.splitext(path)[1].lower().lstrip(".")
+            if ext not in ("m3u8", "aac", "ts", "mp3", "m4a"):
+                ext = "bin"
             out_lines.append(
                 f"/seg.{ext}?{urlencode({'u': abs_url, 'station': station})}"
             )
-        rewritten = '\n'.join(out_lines) + '\n'
+        rewritten = "\n".join(out_lines) + "\n"
         return web.Response(
             status=200,
             text=rewritten,
             headers={
-                'Content-Type': 'application/vnd.apple.mpegurl',
-                'Cache-Control': 'no-store, no-cache, must-revalidate',
-                'Pragma': 'no-cache',
+                "Content-Type": "application/vnd.apple.mpegurl",
+                "Cache-Control": "no-store, no-cache, must-revalidate",
+                "Pragma": "no-cache",
             },
         )
 
     async def handle_seg(self, request: web.Request) -> web.StreamResponse:
         """Proxy an individual segment request."""
-        url = request.query.get('u')
-        station = request.query.get('station')
+        url = request.query.get("u")
+        station = request.query.get("station")
         if not url:
-            return web.Response(status=400, text='missing u')
+            return web.Response(status=400, text="missing u")
         assert self._session is not None
         for attempt in range(RADIKO_SEGMENT_RETRY_ATTEMPTS):
             try:
                 async with self._session.get(url, timeout=HTTP_TIMEOUT) as upstream:
                     if upstream.status == 200:
                         ctype = upstream.headers.get(
-                            'Content-Type', 'application/octet-stream'
+                            "Content-Type", "application/octet-stream"
                         )
                         resp = web.StreamResponse(
-                            status=200, headers={'Content-Type': ctype}
+                            status=200, headers={"Content-Type": ctype}
                         )
                         await resp.prepare(request)
                         async for chunk in upstream.content.iter_chunked(
@@ -127,20 +125,20 @@ class RadikoProxyServer:
                         resolved = await self._ensure_resolved(station)
                         if resolved:
                             old_parsed = urlparse(url)
-                            filename = old_parsed.path.split('/')[-1]
+                            filename = old_parsed.path.split("/")[-1]
                             tail = filename + (
-                                f'?{old_parsed.query}' if old_parsed.query else ''
+                                f"?{old_parsed.query}" if old_parsed.query else ""
                             )
                             new_base = self._base_url(resolved.m3u8_url)
-                            url = f'{new_base}{tail}'
+                            url = f"{new_base}{tail}"
                             continue
                         else:
                             return web.Response(
-                                status=503, text='failed to resolve stream'
+                                status=503, text="failed to resolve stream"
                             )
                     else:
                         return web.Response(
-                            status=upstream.status, text='upstream error'
+                            status=upstream.status, text="upstream error"
                         )
             except (asyncio.TimeoutError, aiohttp.ClientError):
                 if attempt < RADIKO_SEGMENT_RETRY_ATTEMPTS - 1:
@@ -148,25 +146,25 @@ class RadikoProxyServer:
                         self._cache.pop(station, None)
                         await self._ensure_resolved(station)
                     continue
-        return web.Response(status=502, text='all attempts failed')
+        return web.Response(status=502, text="all attempts failed")
 
     async def handle_clear_cache(self, request: web.Request) -> web.Response:
         """Clear cached stream resolutions for a station."""
         try:
             data = await request.json()
-            station = data.get('station')
+            station = data.get("station")
             if station:
                 self._cache.pop(station, None)
-                return web.Response(status=200, text='cache cleared')
+                return web.Response(status=200, text="cache cleared")
         except Exception:
             pass
-        return web.Response(status=400, text='invalid request')
+        return web.Response(status=400, text="invalid request")
 
     def _base_url(self, url: str) -> str:
         """Return the directory portion of a URL."""
         p = urlparse(url)
-        base_path = p.path.rsplit('/', 1)[0]
-        return f'{p.scheme}://{p.netloc}{base_path}/'
+        base_path = p.path.rsplit("/", 1)[0]
+        return f"{p.scheme}://{p.netloc}{base_path}/"
 
     async def _ensure_resolved(self, station: str) -> ResolvedStream | None:
         """Resolve and cache stream information for a station."""
@@ -209,13 +207,13 @@ class RadikoProxyServer:
         await self._site.start()
         timeout = aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
         base = dict(self._resolver.http.headers)
-        base.setdefault('User-Agent', base.get('User-Agent', 'Mozilla/5.0'))
-        base.setdefault('Referer', 'https://radiko.jp/')
-        base.setdefault('Origin', 'https://radiko.jp')
-        base.setdefault('Accept', 'application/vnd.apple.mpegurl,*/*')
-        base.setdefault('Accept-Language', 'ja,en-US;q=0.9,en;q=0.8')
-        base.setdefault('Cache-Control', 'no-cache')
-        base.setdefault('Pragma', 'no-cache')
+        base.setdefault("User-Agent", base.get("User-Agent", "Mozilla/5.0"))
+        base.setdefault("Referer", "https://radiko.jp/")
+        base.setdefault("Origin", "https://radiko.jp")
+        base.setdefault("Accept", "application/vnd.apple.mpegurl,*/*")
+        base.setdefault("Accept-Language", "ja,en-US;q=0.9,en;q=0.8")
+        base.setdefault("Cache-Control", "no-cache")
+        base.setdefault("Pragma", "no-cache")
         self._session = aiohttp.ClientSession(timeout=timeout, headers=base)
 
     def stop(self) -> None:

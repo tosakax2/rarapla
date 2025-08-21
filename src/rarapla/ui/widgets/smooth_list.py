@@ -1,10 +1,17 @@
 from PySide6.QtCore import QEasingCurve, QElapsedTimer, QPropertyAnimation, Qt
 from PySide6.QtGui import QWheelEvent
-from PySide6.QtWidgets import QAbstractItemView, QListWidget, QScroller, QScrollerProperties, QWidget
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QListWidget,
+    QScroller,
+    QScrollerProperties,
+    QWidget,
+)
+
 
 class SmoothListWidget(QListWidget):
 
-    def __init__(self, parent: QWidget | None=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         QScroller.grabGesture(self.viewport(), QScroller.LeftMouseButtonGesture)
@@ -15,7 +22,7 @@ class SmoothListWidget(QListWidget):
         p.setScrollMetric(QScrollerProperties.OvershootScrollDistanceFactor, 0.15)
         p.setScrollMetric(QScrollerProperties.FrameRate, QScrollerProperties.Fps60)
         QScroller.scroller(self.viewport()).setScrollerProperties(p)
-        self._anim = QPropertyAnimation(self.verticalScrollBar(), b'value', self)
+        self._anim = QPropertyAnimation(self.verticalScrollBar(), b"value", self)
         self._anim.setEasingCurve(QEasingCurve.OutCubic)
         self._anim.setDuration(140)
         self._pixel_step = 1.0
@@ -45,7 +52,10 @@ class SmoothListWidget(QListWidget):
             boost *= 2.0
         if e.modifiers() & Qt.AltModifier:
             boost *= 3.0
-        if self._accel_timer.isValid() and self._accel_timer.elapsed() < self._accel_window_ms:
+        if (
+            self._accel_timer.isValid()
+            and self._accel_timer.elapsed() < self._accel_window_ms
+        ):
             self._accel_streak = min(self._accel_streak + 1, 6)
         else:
             self._accel_streak = 0

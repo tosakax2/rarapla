@@ -16,9 +16,9 @@ class RadioBrowserClient:
             base: Base URL of the Radio Browser API.
             session: Optional requests session to reuse.
         """
-        self.base: str = base or 'https://de1.api.radio-browser.info'
+        self.base: str = base or "https://de1.api.radio-browser.info"
         self.s: requests.Session = session or requests.Session()
-        self.s.headers.update({'User-Agent': 'rapla/0.1.0'})
+        self.s.headers.update({"User-Agent": "rapla/0.1.0"})
 
     def search_japan(self, limit: int = 100) -> list[Channel]:
         """Search for popular Japanese stations.
@@ -30,11 +30,11 @@ class RadioBrowserClient:
             List of matching channels.
         """
         params = {
-            'countrycode': 'JP',
-            'hidebroken': 'true',
-            'order': 'clickcount',
-            'reverse': 'true',
-            'limit': str(limit),
+            "countrycode": "JP",
+            "hidebroken": "true",
+            "order": "clickcount",
+            "reverse": "true",
+            "limit": str(limit),
         }
         return self._search(params)
 
@@ -49,11 +49,11 @@ class RadioBrowserClient:
             List of matching channels.
         """
         params = {
-            'tag': tag,
-            'hidebroken': 'true',
-            'order': 'clickcount',
-            'reverse': 'true',
-            'limit': str(limit),
+            "tag": tag,
+            "hidebroken": "true",
+            "order": "clickcount",
+            "reverse": "true",
+            "limit": str(limit),
         }
         return self._search(params)
 
@@ -65,7 +65,7 @@ class RadioBrowserClient:
         Args:
             station_uuid: UUID of the station.
         """
-        url = f'{self.base}/json/url/{station_uuid}'
+        url = f"{self.base}/json/url/{station_uuid}"
         try:
             self.s.get(url, timeout=5)
         except Exception:
@@ -73,23 +73,23 @@ class RadioBrowserClient:
 
     def _search(self, params: dict[str, str]) -> list[Channel]:
         """Perform a search request against the API."""
-        url = f'{self.base}/json/stations/search'
+        url = f"{self.base}/json/stations/search"
         r = self.s.get(url, params=params, timeout=10)
         r.raise_for_status()
         items = r.json() or []
         out: list[Channel] = []
         for it in items:
-            uuid = (it.get('stationuuid') or '').strip()
-            name = (it.get('name') or '').strip()
-            fav = (it.get('favicon') or '').strip() or None
-            stream = (it.get('url_resolved') or it.get('url') or '').strip()
+            uuid = (it.get("stationuuid") or "").strip()
+            name = (it.get("name") or "").strip()
+            fav = (it.get("favicon") or "").strip() or None
+            stream = (it.get("url_resolved") or it.get("url") or "").strip()
             if uuid and name and stream:
                 out.append(
                     Channel(
-                        id=f'rb:{uuid}',
+                        id=f"rb:{uuid}",
                         name=name,
                         logo_url=fav,
-                        program_title='',
+                        program_title="",
                         program_image=None,
                         stream_url=stream,
                     )
