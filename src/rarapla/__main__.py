@@ -37,6 +37,7 @@ def _qt_msg_filter(
 
 
 def main() -> None:
+    print("=== __main__ started ===")
     setup_logging()
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon("icon.ico"))
@@ -122,3 +123,6 @@ def main() -> None:
     code = app.exec()
     proxy.stop()
     sys.exit(code)
+
+if __name__ == "__main__":
+    main()
