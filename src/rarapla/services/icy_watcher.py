@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, QThread, Signal
 import asyncio
 import aiohttp
+from collections.abc import Mapping
 from urllib.parse import parse_qs, unquote_plus
 
 
@@ -19,7 +20,7 @@ class IcyWatcher(QThread):
         self._last_title = ""
         self._base_meta: dict[str, str] = {}
         self._loop: asyncio.AbstractEventLoop | None = None
-        self._task: asyncio.Task | None = None
+        self._task: asyncio.Task[None] | None = None
         self._session: aiohttp.ClientSession | None = None
         self._resp: aiohttp.ClientResponse | None = None
 
@@ -168,7 +169,9 @@ class IcyWatcher(QThread):
                 pass
         return ""
 
-    def _parse_metadata_text(self, text: str, station: str) -> tuple[str, dict]:
+    def _parse_metadata_text(
+        self, text: str, station: str
+    ) -> tuple[str, dict[str, str]]:
         items: dict[str, str] = {}
         for part in text.split(";"):
             part = part.strip()
@@ -198,17 +201,5 @@ class IcyWatcher(QThread):
                 pass
         return (title, meta_map)
 
-    def _extract_headers(self, hdr) -> dict[str, str]:
+    def _extract_headers(self, hdr: Mapping[str, str]) -> dict[str, str]:
         return {str(k): str(v) for k, v in hdr.items()}
-
-    def _parse_metadata_text(self, text: str, station: str) -> tuple[str, dict]:
-        items: dict[str, str] = {}
-        for part in text.split(";"):
-            part = part.strip()
-            if not part or "=" not in part:
-                continue
-            k, v = part.split("=", 1)
-            v = v.strip().strip("'").strip('"')
-            items[k.strip()] = v
-        title = items.get("StreamTitle", "").strip()
-        return (title, items)

@@ -1,12 +1,13 @@
 import asyncio
 from collections.abc import Coroutine, Mapping
 from datetime import datetime, timedelta, timezone, tzinfo
+from textwrap import dedent
 from typing import Any, TypeVar
+
 import pytest
 
 
 class FakeResponse:
-
     def __init__(self, status_code: int = 200, text: str = "") -> None:
         self.status_code = status_code
         self.text = text
@@ -19,7 +20,6 @@ class FakeResponse:
 
 
 class FakeRequestsSession:
-
     def __init__(self, table: Mapping[str, FakeResponse]) -> None:
         self._table = dict(table)
         self.headers: dict[str, str] = {}
@@ -32,7 +32,6 @@ class FakeRequestsSession:
 
 
 class _FakeAiohttpResp:
-
     def __init__(self, status: int = 200, text: str = "") -> None:
         self.status = status
         self._text = text
@@ -51,7 +50,6 @@ class _FakeAiohttpResp:
 
 
 class FakeAiohttpSession:
-
     def __init__(self, text: str = "") -> None:
         self._text = text
 
@@ -66,26 +64,94 @@ def sample_area_html() -> str:
 
 @pytest.fixture
 def station_list_xml() -> str:
-    return '<?xml version="1.0" encoding="UTF-8"?>\n<stations>\n  <station>\n    <id>FMT</id>\n    <name>FM TOKYO</name>\n    <logo_medium>http://cdn/logo_fmt_med.png</logo_medium>\n    <logo_small>http://cdn/logo_fmt_small.png</logo_small>\n  </station>\n  <station>\n    <id>TBS</id>\n    <name>TBS RADIO</name>\n    <logo_large>http://cdn/logo_tbs_large.png</logo_large>\n  </station>\n</stations>\n'
+    return dedent(
+        """\
+        <?xml version="1.0" encoding="UTF-8"?>
+        <stations>
+          <station>
+            <id>FMT</id>
+            <name>FM TOKYO</name>
+            <logo_medium>http://cdn/logo_fmt_med.png</logo_medium>
+            <logo_small>http://cdn/logo_fmt_small.png</logo_small>
+          </station>
+          <station>
+            <id>TBS</id>
+            <name>TBS RADIO</name>
+            <logo_large>http://cdn/logo_tbs_large.png</logo_large>
+          </station>
+        </stations>
+        """
+    )
 
 
 @pytest.fixture
 def now_xml_current_hit() -> str:
-    return '<?xml version="1.0" encoding="UTF-8"?>\n<radiko>\n  <station id="FMT">\n    <name>FM TOKYO</name>\n    <progs>\n      <prog ft="20250102110000" to="20250102125959">\n        <title>NOW-HIT</title>\n        <img>http://img/now_fmt.png</img>\n      </prog>\n      <prog ft="20250102130000" to="20250102135959">\n        <title>NEXT</title>\n      </prog>\n    </progs>\n  </station>\n  <station id="TBS">\n    <name>TBS RADIO</name>\n    <progs>\n      <prog ft="20250102120000" to="20250102125959">\n        <title>TBS-NOW</title>\n      </prog>\n    </progs>\n  </station>\n</radiko>\n'
+    return dedent(
+        """\
+        <?xml version="1.0" encoding="UTF-8"?>
+        <radiko>
+          <station id="FMT">
+            <name>FM TOKYO</name>
+            <progs>
+              <prog ft="20250102110000" to="20250102125959">
+                <title>NOW-HIT</title>
+                <img>http://img/now_fmt.png</img>
+              </prog>
+              <prog ft="20250102130000" to="20250102135959">
+                <title>NEXT</title>
+              </prog>
+            </progs>
+          </station>
+          <station id="TBS">
+            <name>TBS RADIO</name>
+            <progs>
+              <prog ft="20250102120000" to="20250102125959">
+                <title>TBS-NOW</title>
+              </prog>
+            </progs>
+          </station>
+        </radiko>
+        """
+    )
 
 
 @pytest.fixture
 def date_xml_has_now() -> str:
-    return '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n  <prog ft="20250102110000" to="20250102125959">\n    <title>DateAPI Program</title>\n    <pfm>Aさん, Bさん</pfm>\n    <desc>説明テキスト</desc>\n    <img>http://img/date.png</img>\n  </prog>\n</root>\n'
+    return dedent(
+        """\
+        <?xml version="1.0" encoding="UTF-8"?>
+        <root>
+          <prog ft="20250102110000" to="20250102125959">
+            <title>DateAPI Program</title>
+            <pfm>Aさん, Bさん</pfm>
+            <desc>説明テキスト</desc>
+            <img>http://img/date.png</img>
+          </prog>
+        </root>
+        """
+    )
 
 
 @pytest.fixture
 def weekly_xml_fallback() -> str:
-    return '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n  <date yyyymmdd="20250102">\n    <prog ft="20250102110000" to="20250102125959">\n      <title>WeeklyAPI Program</title>\n      <pfm>Cさん</pfm>\n      <desc>週次説明</desc>\n      <img>http://img/weekly.png</img>\n    </prog>\n  </date>\n</root>\n'
+    return dedent(
+        """\
+        <?xml version="1.0" encoding="UTF-8"?>
+        <root>
+          <date yyyymmdd="20250102">
+            <prog ft="20250102110000" to="20250102125959">
+              <title>WeeklyAPI Program</title>
+              <pfm>Cさん</pfm>
+              <desc>週次説明</desc>
+              <img>http://img/weekly.png</img>
+            </prog>
+          </date>
+        </root>
+        """
+    )
 
 
 class FakeDateTime(datetime):
-
     @classmethod
     def now(cls, tz: tzinfo | None = None) -> "FakeDateTime":
         jst = timezone(timedelta(hours=9))

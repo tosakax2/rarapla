@@ -1,5 +1,7 @@
 import os
 import sys
+from textwrap import dedent
+
 from PySide6.QtCore import (
     QLoggingCategory,
     QMessageLogContext,
@@ -41,7 +43,16 @@ def main() -> None:
     font = QFont("Meiryo UI", 10)
     app.setFont(font)
     QLoggingCategory.setFilterRules(
-        "qt.multimedia.debug=false\nqt.multimedia.info=false\nqt.multimedia.warning=false\nqt.multimedia.ffmpeg.debug=false\nqt.multimedia.ffmpeg.info=false\nqt.multimedia.ffmpeg.warning=false\n"
+        "\n".join(
+            [
+                "qt.multimedia.debug=false",
+                "qt.multimedia.info=false",
+                "qt.multimedia.warning=false",
+                "qt.multimedia.ffmpeg.debug=false",
+                "qt.multimedia.ffmpeg.info=false",
+                "qt.multimedia.ffmpeg.warning=false",
+            ]
+        )
     )
     qInstallMessageHandler(_qt_msg_filter)
     try:
@@ -50,7 +61,53 @@ def main() -> None:
         base = qdarkstyle.load_stylesheet()
         app.setStyleSheet(
             base
-            + '\n            /* QListWidget のデフォルト矩形ハイライトを消す */\n            QListWidget::item:selected {\n                background: transparent;\n            }\n\n            /* 通常は枠のみ（完全透明） */\n            #ChannelCard {\n                border: 1px solid rgba(255,255,255,0.18);\n                border-radius: 4px;\n                background: transparent;\n            }\n\n            /* hover */\n            #ChannelCard:hover {\n                border-color: rgba(255,255,255,0.30);\n                background: rgba(255,255,255,0.04);\n            }\n\n            /* ダイナミックプロパティ selected=true のときだけ色を付ける */\n            #ChannelCard[selected="true"] {\n                border-color: #3daee9;\n                background: rgba(61,174,233,0.2);\n            }\n\n            /* ラベルは透過（ロゴ・文字の四角防止） */\n            #ChannelCard QLabel {\n                background: transparent;\n            }\n\n            #ChannelCard QLabel#ChannelIcon {\n                background: white;\n                border-radius: 4px;\n            }\n\n            /* タイトルを太字・大きめ */\n            #ChannelCard #ChannelName {\n                font-weight: bold;\n                font-size: 14pt;\n            }\n            #DetailTitle {\n                font-weight: bold;\n                font-size: 14pt;\n            }\n            '
+            + dedent(
+                """
+                /* QListWidget のデフォルト矩形ハイライトを消す */
+                QListWidget::item:selected {
+                    background: transparent;
+                }
+
+                /* 通常は枠のみ（完全透明） */
+                #ChannelCard {
+                    border: 1px solid rgba(255,255,255,0.18);
+                    border-radius: 4px;
+                    background: transparent;
+                }
+
+                /* hover */
+                #ChannelCard:hover {
+                    border-color: rgba(255,255,255,0.30);
+                    background: rgba(255,255,255,0.04);
+                }
+
+                /* ダイナミックプロパティ selected=true のときだけ色を付ける */
+                #ChannelCard[selected="true"] {
+                    border-color: #3daee9;
+                    background: rgba(61,174,233,0.2);
+                }
+
+                /* ラベルは透過（ロゴ・文字の四角防止） */
+                #ChannelCard QLabel {
+                    background: transparent;
+                }
+
+                #ChannelCard QLabel#ChannelIcon {
+                    background: white;
+                    border-radius: 4px;
+                }
+
+                /* タイトルを太字・大きめ */
+                #ChannelCard #ChannelName {
+                    font-weight: bold;
+                    font-size: 14pt;
+                }
+                #DetailTitle {
+                    font-weight: bold;
+                    font-size: 14pt;
+                }
+                """
+            )
         )
     except Exception:
         pass
