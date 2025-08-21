@@ -147,9 +147,18 @@ class RadikoClient:
 
     def _program_from_xml(self, prog: ET.Element) -> Program:
         """Create a :class:`Program` instance from an XML node."""
+
+        # Radiko occasionally stores the long description in <info>
+        # while <desc> may be empty.  Fallback to <info> if needed.
+        def _get_desc(node: ET.Element) -> str | None:
+            text = (node.findtext("desc") or "").strip()
+            if not text:
+                text = (node.findtext("info") or "").strip()
+            return text or None
+
         return Program(
             title=(prog.findtext("title") or "").strip(),
             pfm=prog.findtext("pfm") or None,
-            desc=prog.findtext("desc") or None,
+            desc=_get_desc(prog),
             image=prog.findtext("img") or None,
         )
