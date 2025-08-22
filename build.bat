@@ -55,7 +55,7 @@ echo.
 echo %CYAN%[Step 4]%RESET% Compile project with Nuitka
 python -m nuitka ^
     --standalone ^
-    --windows-disable-console
+    --windows-disable-console ^
     --enable-plugin=pyside6 ^
     --include-data-files=icon.ico=icon.ico ^
     --include-data-files=rb_presets.json=rb_presets.json ^
