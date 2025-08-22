@@ -98,8 +98,7 @@ build.bat
 - **コーディング規約**
 
   - PEP 8 を基準に**88 桁**で整形（Black 推奨）。`flake8` と `mypy(strict)` を CI で実行
-  - Python 3.11 の組込み型ヒント（`list[str]` など）を使用し、`typing` / `__future__` は使いません（本リポジトリの実装方針）。
-  - 各 `.py` 先頭に「`# src/rarapla/...`」のパスコメントを付ける方針（推奨）。
+  - Python 3.11 の組込み型ヒント（`list[str]` など）を使用します。
 
 - **テスト**
   `pytest -q`。プロキシの書き換えやポート選択などのユニットテストを含みます。CI（GitHub Actions）は lint & test を OS マトリクスで実行します。
