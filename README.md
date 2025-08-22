@@ -10,13 +10,13 @@ Windows 11 向けの軽量ラジオプレイヤー。Qt (PySide6) をフル活�
 
 ## 主な機能
 
-- **radiko エリア検出 & 番組一覧**
+- **radiko エリア検出 & 番組一覧**  
   `https://api.radiko.jp/apparea/area` からエリア ID（例: `JP12`）を取得し、`v3/program/now/{area}.xml` で**放送中番組**とロゴをまとめて表示。詳細パネルでは番組情報（出演・説明・画像）を可能な限り取得して表示します。
-- **Radio Browser 統合**
+- **Radio Browser 統合**  
   日本の人気局やタグ（例: `jpop`, `jazz`, `vocaloid`）で検索し、直接ストリーム URL を再生。初回起動時に `rb_presets.json` を生成してプリセットを追加できます。
-- **軽量 Radiko プロキシ**
+- **軽量 Radiko プロキシ**  
   `http://127.0.0.1:3032`（埋まっていれば順次繰上げ）で待機し、`/live/{station}.m3u8` をローカルに変換・`/seg` 経由でセグメントをプロキシします。エラー時は自動リトライや解像を実施。
-- **Qt Multimedia (FFmpeg) での再生**
+- **Qt Multimedia (FFmpeg) での再生**  
   出力デバイス選択、音量スライダー、Play/Stop トグル対応。Nuitka ビルドでは Qt の multimedia プラグインを明示的に同梱しています
 
 ---
@@ -78,7 +78,7 @@ build.bat
 
 ## 設定・ファイル
 
-- **Radiko プロキシ**
+- **Radiko プロキシ**  
   既定: `127.0.0.1:3032`。使用中なら次の空きポートに自動退避します。エンドポイントは以下の通りです。
 
   - `/live/{station}.m3u8` … master 再書き換え
@@ -86,21 +86,21 @@ build.bat
   - `/clear_cache` … 解決キャッシュのクリア
     （自動ポート選択とルーティング）
 
-- **Radio Browser プリセット**
+- **Radio Browser プリセット**  
   実行ディレクトリに `rb_presets.json` が存在しない場合、起動時に生成されます。`label` / `mode`（`jp` or `tag`）/ `query` を編集してカスタマイズ可能。
 
 ---
 
 ## 開発ガイド
 
-- **設計方針**
+- **設計方針**  
   個人開発でも拡張しやすい分割（`data/`, `proxy/`, `services/`, `ui/`）とシンプルなモデル（`Channel`, `Program`）。UI はカードリスト＋詳細＋プレイヤーを疎結合なコントローラで連携。
 - **コーディング規約**
 
   - PEP 8 を基準に**88 桁**で整形（Black 推奨）。`flake8` と `mypy(strict)` を CI で実行
   - Python 3.11 の組込み型ヒント（`list[str]` など）を使用します。
 
-- **テスト**
+- **テスト**  
   `pytest -q`。プロキシの書き換えやポート選択などのユニットテストを含みます。CI（GitHub Actions）は lint & test を OS マトリクスで実行します。
 
 ### ディレクトリ構成（抜粋）
@@ -119,9 +119,9 @@ src/rarapla
 
 ## トラブルシュート
 
-- **再生できない / 音が出ない**
+- **再生できない / 音が出ない**  
   Qt Multimedia (FFmpeg) プラグインが必要です。Nuitka ビルドでは `--include-qt-plugins=multimedia` で同梱しています。
-- **radiko が 404 や 403 になる**
+- **radiko が 404 や 403 になる**  
   地域制限やセッションの期限切れが原因の場合、プロキシのキャッシュを自動的にクリアして再解決を試みます。
 
 ---
