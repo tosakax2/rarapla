@@ -23,7 +23,7 @@ AUDIO_MAX_VOLUME = 100
 AUDIO_DEFAULT_VOLUME = 33
 
 # Channel card widget
-CARD_HEIGHT = 80
+CARD_HEIGHT = 84
 
 # Radiko proxy parameters
 RADIKO_CACHE_TTL_SEC = 5 * 60
