@@ -12,7 +12,7 @@ echo 🔨 RaRaPla Nuitka Build
 
 cd /d %~dp0
 
-set "OUTDIR=build"
+set "OUTDIR=dist"
 set "EXENAME=RaRaPla"
 
 echo.
@@ -57,6 +57,9 @@ python -m nuitka ^
     --standalone ^
     --windows-console-mode=disable ^
     --enable-plugin=pyside6 ^
+    --include-qt-plugins=multimedia ^
+    --include-package=streamlink.plugins ^
+    --include-package=streamlink.plugin ^
     --include-data-files=icon.ico=icon.ico ^
     --include-data-files=rb_presets.json=rb_presets.json ^
     --windows-icon-from-ico=icon.ico ^
