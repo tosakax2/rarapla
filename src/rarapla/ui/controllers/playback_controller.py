@@ -58,6 +58,15 @@ class PlaybackController(QObject):
             self.player.set_media(self._current_direct_url)
             self.player.svc.play()
 
+    def shutdown(self) -> None:
+        self._refresh_timer.stop()
+        self._stop_icy_watch()
+        try:
+            self.player.svc.stop()
+            self.player.svc.clear_source()
+        except Exception:
+            pass
+
     def _build_local_m3u8(self, station_id: str, force: bool = False) -> str:
         base = f"{self.proxy_base}/live/{station_id}.m3u8"
         if force:

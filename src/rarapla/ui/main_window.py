@@ -1,7 +1,7 @@
 import json
 import os
 from PySide6.QtCore import QThread, QTimer, Qt
-from PySide6.QtGui import QShowEvent
+from PySide6.QtGui import QCloseEvent, QShowEvent
 from PySide6.QtWidgets import (
     QComboBox,
     QGroupBox,
@@ -456,3 +456,29 @@ class MainWindow(QMainWindow):
         super().showEvent(e)
         if self.minimumHeight() < 512:
             self.setMinimumHeight(512)
+
+    def closeEvent(self, e: QCloseEvent) -> None:
+        self._switch_timer.stop()
+        self.playback.shutdown()
+        self.now.shutdown()
+        if self._prog_worker:
+            try:
+                self._prog_worker.cancel()
+            except Exception:
+                pass
+        for attr in ("_prog_thread", "_populate_thread", "_rb_thread"):
+            t = getattr(self, attr)
+            if t is not None:
+                t.quit()
+                t.wait(3000)
+                t.deleteLater()
+                setattr(self, attr, None)
+        for attr in ("_prog_worker", "_populate_worker", "_rb_worker"):
+            w = getattr(self, attr)
+            if w is not None:
+                try:
+                    w.deleteLater()
+                except Exception:
+                    pass
+                setattr(self, attr, None)
+        super().closeEvent(e)
