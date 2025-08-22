@@ -40,15 +40,12 @@ class ChannelCard(QFrame):
         self.setFrameShape(QFrame.StyledPanel)
         root = QHBoxLayout(self)
         root.setContentsMargins(8, 8, 8, 8)
-        root.setSpacing(8)
         self.icon = QLabel("●")
         self.icon.setObjectName("ChannelIcon")
         self.icon.setAlignment(Qt.AlignCenter)
         self.icon.setFixedSize(QSize(64, 64))
         self.icon.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         text_box = QVBoxLayout()
-        text_box.setContentsMargins(0, 0, 0, 0)
-        text_box.setSpacing(4)
         name = _soft_wrap_english(ch.name or "")
         title = _soft_wrap_english(ch.program_title or "")
         self.name_label = QLabel(name)
@@ -59,6 +56,7 @@ class ChannelCard(QFrame):
         self.title_label = QLabel(title)
         self.title_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.title_label.setText(self._elide(title, 340))
+        self.title_label.setContentsMargins(4, 0, 0, 0)
         text_box.addWidget(self.name_label)
         text_box.addWidget(self.title_label)
         root.addWidget(self.icon)
@@ -92,17 +90,17 @@ class ChannelCard(QFrame):
             )
         reply.deleteLater()
 
-    def _elide(self, text: str, width_limit: int) -> str:
+    def _elide(self, text: str, width_limit: int = 320) -> str:
         fm = self.fontMetrics()
         return fm.elidedText(text, Qt.ElideRight, width_limit)
 
     def update_content(self, ch: Channel) -> None:
-        new_name = self._elide(_soft_wrap_english(ch.name or ""))
-        new_title = self._elide(_soft_wrap_english(ch.program_title or ""))
+        new_name = self._elide(_soft_wrap_english(ch.name or ""), 220)
+        new_title = self._elide(_soft_wrap_english(ch.program_title or ""), 340)
         if self.name_label.text() != new_name:
-            self.name_label.setText(new_name, 220)
+            self.name_label.setText(new_name)
         if self.title_label.text() != new_title:
-            self.title_label.setText(new_title, 340)
+            self.title_label.setText(new_title)
         old_logo = self._ch.logo_url or "" if self._ch else ""
         new_logo = ch.logo_url or ""
         if new_logo and new_logo != old_logo:
