@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rarapla"
-version = "0.1.0"
-description = "ミニマルなFMラジオプレイヤー"
+version = "1.0.0"
+description = "minimal radio player"
 authors = [
   { name = "tosakax2", email = "tosakax2@gmail.com" }
 ]
