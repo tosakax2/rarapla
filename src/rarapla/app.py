@@ -118,7 +118,7 @@ def main() -> None:
     app.setPalette(pal)
     proxy = RadikoProxyServer(host=PROXY_HOST, port=PROXY_PORT)
     proxy.start_in_thread()
-    w = MainWindow(proxy_host=PROXY_HOST, proxy_port=PROXY_PORT)
+    w = MainWindow(proxy_host=PROXY_HOST, proxy_port=proxy.port)
     w.show()
     code = app.exec()
     proxy.stop()
