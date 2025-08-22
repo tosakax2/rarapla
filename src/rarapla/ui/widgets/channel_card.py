@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 import re
-from rarapla.config import USER_AGENT
+from rarapla.config import CARD_HEIGHT, USER_AGENT
 from rarapla.models.channel import Channel
 
 _ZWSP = "\u200b"
@@ -55,10 +55,10 @@ class ChannelCard(QFrame):
         self.name_label.setObjectName("ChannelName")
         self.name_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.name_label.setStyleSheet("font-weight: 600;")
-        self.name_label.setWordWrap(True)
+        self.name_label.setText(self._elide(name, 220))
         self.title_label = QLabel(title)
-        self.title_label.setWordWrap(True)
         self.title_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        self.title_label.setText(self._elide(title, 340))
         text_box.addWidget(self.name_label)
         text_box.addWidget(self.title_label)
         root.addWidget(self.icon)
@@ -92,15 +92,23 @@ class ChannelCard(QFrame):
             )
         reply.deleteLater()
 
+    def _elide(self, text: str, width_limit: int) -> str:
+        fm = self.fontMetrics()
+        return fm.elidedText(text, Qt.ElideRight, width_limit)
+
     def update_content(self, ch: Channel) -> None:
-        new_name = _soft_wrap_english(ch.name or "")
-        new_title = _soft_wrap_english(ch.program_title or "")
+        new_name = self._elide(_soft_wrap_english(ch.name or ""))
+        new_title = self._elide(_soft_wrap_english(ch.program_title or ""))
         if self.name_label.text() != new_name:
-            self.name_label.setText(new_name)
+            self.name_label.setText(new_name, 220)
         if self.title_label.text() != new_title:
-            self.title_label.setText(new_title)
+            self.title_label.setText(new_title, 340)
         old_logo = self._ch.logo_url or "" if self._ch else ""
         new_logo = ch.logo_url or ""
         if new_logo and new_logo != old_logo:
             self._load_logo(new_logo)
         self._ch = ch
+
+    def sizeHint(self) -> QSize:
+        s = super().sizeHint()
+        return QSize(s.width(), CARD_HEIGHT)
