@@ -26,6 +26,19 @@ class NowRefresher(QObject):
     def stop(self) -> None:
         self._timer.stop()
 
+    def shutdown(self) -> None:
+        self.stop()
+        t = self._thread
+        if t is not None:
+            t.quit()
+            t.wait(3000)
+            t.deleteLater()
+            self._thread = None
+        if self._worker is not None:
+            self._worker.deleteLater()
+            self._worker = None
+        self._busy = False
+
     def _tick(self) -> None:
         if self._busy or self._thread is not None:
             return
