@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import socket
 import threading
 from urllib.parse import urlencode, urljoin, urlparse
 
@@ -29,7 +30,7 @@ class RadikoProxyServer:
             port: TCP port to listen on.
         """
         self.host: str = host
-        self.port: int = port
+        self.port: int = self._find_open_port(host, port)
         self._resolver: RadikoResolver = RadikoResolver()
         self._app: web.Application = web.Application()
         self._app.add_routes(
@@ -46,6 +47,28 @@ class RadikoProxyServer:
         self._cache: dict[str, tuple[ResolvedStream, float]] = {}
         self._cache_ttl_sec: int = RADIKO_CACHE_TTL_SEC
         self._session: aiohttp.ClientSession | None = None
+
+    @staticmethod
+    def _find_open_port(host: str, start: int, attempts: int = 10) -> int:
+        """Return the first available TCP port starting from ``start``.
+
+        Args:
+            host: Hostname to test binding against.
+            start: Initial port number to try.
+            attempts: How many sequential ports to probe.
+
+        Raises:
+            OSError: If no free port is found in the range.
+        """
+
+        for port in range(start, start + attempts):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                try:
+                    sock.bind((host, port))
+                except OSError:
+                    continue
+                return port
+        raise OSError("no free port available")
 
     async def handle_master(self, request: web.Request) -> web.Response:
         """Rewrite the master playlist to point to this proxy."""
