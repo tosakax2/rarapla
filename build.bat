@@ -61,7 +61,6 @@ python -m nuitka ^
     --include-package=streamlink.plugins ^
     --include-package=streamlink.plugin ^
     --include-data-files=icon.ico=icon.ico ^
-    --include-data-files=rb_presets.json=rb_presets.json ^
     --windows-icon-from-ico=icon.ico ^
     --output-dir="%OUTDIR%" ^
     --output-filename="%EXENAME%" ^
