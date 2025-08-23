@@ -52,7 +52,7 @@ class ChannelCard(QFrame):
         self.name_label.setObjectName("ChannelName")
         self.name_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.name_label.setStyleSheet("font-weight: 600;")
-        self.name_label.setText(self._elide(name, 220))
+        self.name_label.setText(self._elide(name, 216))
         self.title_label = QLabel(title)
         self.title_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.title_label.setText(self._elide(title, 340))
@@ -95,7 +95,7 @@ class ChannelCard(QFrame):
         return fm.elidedText(text, Qt.ElideRight, width_limit)
 
     def update_content(self, ch: Channel) -> None:
-        new_name = self._elide(_soft_wrap_english(ch.name or ""), 220)
+        new_name = self._elide(_soft_wrap_english(ch.name or ""), 216)
         new_title = self._elide(_soft_wrap_english(ch.program_title or ""), 340)
         if self.name_label.text() != new_name:
             self.name_label.setText(new_name)
