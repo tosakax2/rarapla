@@ -68,8 +68,8 @@ python -m nuitka^
     --file-description="RaRaPla"^
     --company-name="tosakax2"^
     --copyright="Copyright tosakax2. All rights reserved."^
-    --file-version=1.0.4.0^
-    --product-version=1.0.4^
+    --file-version=1.1.0.0^
+    --product-version=1.1.0^
     src\rarapla\__main__.py
 if %errorlevel% neq 0 (
     echo └─ ❌ %RED%Build failed%RESET%
