@@ -65,9 +65,9 @@ python -m nuitka^
     --output-dir="%OUTDIR%"^
     --output-filename="%EXENAME%"^
     --product-name="RaRaPla"^
-    --file-description="Minimal Radio Player"^
+    --file-description="RaRaPla"^
     --company-name="tosakax2"^
-    --copyright="© tosakax2"^
+    --copyright="Copyright tosakax2. All rights reserved."^
     --file-version=1.0.4.0^
     --product-version=1.0.4^
     src\rarapla\__main__.py
