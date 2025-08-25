@@ -3,6 +3,7 @@ import os
 from typing import Any, TypedDict, cast
 from PySide6.QtCore import QThread, QTimer, Qt
 from PySide6.QtGui import QCloseEvent, QShowEvent
+from shiboken6 import isValid
 from PySide6.QtWidgets import (
     QComboBox,
     QGroupBox,
@@ -317,7 +318,13 @@ class MainWindow(QMainWindow):
         worker.finished.connect(worker.deleteLater)
         worker.error.connect(worker.deleteLater)
         worker.cancelled.connect(worker.deleteLater)
-        thread.finished.connect(thread.deleteLater)
+
+        def _cleanup() -> None:
+            self._prog_thread = None
+            self._prog_worker = None
+            thread.deleteLater()
+
+        thread.finished.connect(_cleanup)
         thread.start()
         self._prog_thread = thread
         self._prog_worker = worker
@@ -407,7 +414,13 @@ class MainWindow(QMainWindow):
         worker.finished.connect(worker.deleteLater)
         worker.error.connect(worker.deleteLater)
         worker.cancelled.connect(worker.deleteLater)
-        thread.finished.connect(thread.deleteLater)
+
+        def _cleanup() -> None:
+            self._prog_thread = None
+            self._prog_worker = None
+            thread.deleteLater()
+
+        thread.finished.connect(_cleanup)
         thread.start()
         self._prog_thread = thread
         self._prog_worker = worker
@@ -483,17 +496,21 @@ class MainWindow(QMainWindow):
                 pass
         for attr in ("_prog_thread", "_populate_thread", "_rb_thread"):
             t = getattr(self, attr)
-            if t is not None:
+            setattr(self, attr, None)
+            if t is None or not isValid(t):
+                continue
+            try:
                 t.quit()
                 t.wait(3000)
+            finally:
                 t.deleteLater()
-                setattr(self, attr, None)
         for attr in ("_prog_worker", "_populate_worker", "_rb_worker"):
             w = getattr(self, attr)
-            if w is not None:
-                try:
-                    w.deleteLater()
-                except Exception:
-                    pass
-                setattr(self, attr, None)
+            setattr(self, attr, None)
+            if w is None or not isValid(w):
+                continue
+            try:
+                w.deleteLater()
+            except Exception:
+                pass
         super().closeEvent(e)
