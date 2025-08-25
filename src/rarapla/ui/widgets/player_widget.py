@@ -1,3 +1,4 @@
+from typing import cast
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtMultimedia import QAudioDevice, QMediaDevices, QMediaPlayer
 from PySide6.QtWidgets import (
@@ -24,12 +25,14 @@ class PlayerWidget(QWidget):
         self._media_devices = QMediaDevices(self)
         self.dev_label = QLabel("Output:")
         self.dev_combo = QComboBox()
-        self.dev_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.dev_combo.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToContents
+        )
         dev_row = QHBoxLayout()
         dev_row.addWidget(self.dev_label)
         dev_row.addWidget(self.dev_combo, 1)
         self.vol_label = QLabel("Volume:")
-        self.vol = QSlider(Qt.Horizontal)
+        self.vol = QSlider(Qt.Orientation.Horizontal)
         self.vol.setRange(AUDIO_MIN_VOLUME, AUDIO_MAX_VOLUME)
         self.vol.setValue(AUDIO_DEFAULT_VOLUME)
         self.svc.set_volume(AUDIO_DEFAULT_VOLUME)
@@ -61,7 +64,7 @@ class PlayerWidget(QWidget):
             self._sync_toggle_to_state(False)
 
     def _device_id(self, dev: QAudioDevice) -> bytes:
-        return bytes(dev.id())
+        return cast(bytes, dev.id().data())
 
     def _refresh_devices(self, select_current: bool) -> None:
         devs = self._media_devices.audioOutputs()

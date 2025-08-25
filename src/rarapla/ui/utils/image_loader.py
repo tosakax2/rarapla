@@ -33,7 +33,7 @@ class ImageLoader(QObject):
                     on_error()
                 return
             data = reply.readAll()
-            b = bytes(data) if isinstance(data, QByteArray) else data
+            b = data.data() if isinstance(data, QByteArray) else data
             reply.deleteLater()
             pix = QPixmap()
             if not pix.loadFromData(b) or pix.isNull():
