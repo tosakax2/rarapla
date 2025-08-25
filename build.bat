@@ -53,17 +53,23 @@ if exist "%OUTDIR%" (
 echo.
 
 echo %CYAN%[Step 4]%RESET% Compile project with Nuitka
-python -m nuitka ^
-    --standalone ^
-    --windows-console-mode=disable ^
-    --enable-plugin=pyside6 ^
-    --include-qt-plugins=multimedia ^
-    --include-package=streamlink.plugins ^
-    --include-package=streamlink.plugin ^
-    --include-data-files=icon.ico=icon.ico ^
-    --windows-icon-from-ico=icon.ico ^
-    --output-dir="%OUTDIR%" ^
-    --output-filename="%EXENAME%" ^
+python -m nuitka^
+    --standalone^
+    --windows-console-mode=disable^
+    --enable-plugin=pyside6^
+    --include-qt-plugins=multimedia,platforms^
+    --include-package=streamlink.plugins^
+    --include-package=streamlink.plugin^
+    --include-data-files=icon.ico=icon.ico^
+    --windows-icon-from-ico=icon.ico^
+    --output-dir="%OUTDIR%"^
+    --output-filename="%EXENAME%"^
+    --product-name="RaRaPla"^
+    --file-description="Minimal Radio Player"^
+    --company-name="tosakax2"^
+    --copyright="© tosakax2"^
+    --file-version=1.0.4.0^
+    --product-version=1.0.4^
     src\rarapla\__main__.py
 if %errorlevel% neq 0 (
     echo └─ ❌ %RED%Build failed%RESET%
