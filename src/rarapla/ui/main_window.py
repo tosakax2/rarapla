@@ -359,7 +359,9 @@ class MainWindow(QMainWindow):
         new_map: dict[str, Channel] = {ch.id: ch for ch in channels}
         cur_item = self.list.currentItem()
         cur_id = (
-            cast(Channel, cur_item.data(Qt.ItemDataRole.UserRole)).id if cur_item else None
+            cast(Channel, cur_item.data(Qt.ItemDataRole.UserRole)).id
+            if cur_item
+            else None
         )
         cur_title_before = (
             cast(Channel, cur_item.data(Qt.ItemDataRole.UserRole)).program_title or ""

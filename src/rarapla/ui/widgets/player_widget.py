@@ -25,9 +25,7 @@ class PlayerWidget(QWidget):
         self._media_devices = QMediaDevices(self)
         self.dev_label = QLabel("Output:")
         self.dev_combo = QComboBox()
-        self.dev_combo.setSizeAdjustPolicy(
-            QComboBox.SizeAdjustPolicy.AdjustToContents
-        )
+        self.dev_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
         dev_row = QHBoxLayout()
         dev_row.addWidget(self.dev_label)
         dev_row.addWidget(self.dev_combo, 1)

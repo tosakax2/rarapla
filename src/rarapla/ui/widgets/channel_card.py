@@ -44,9 +44,7 @@ class ChannelCard(QFrame):
         self.icon.setObjectName("ChannelIcon")
         self.icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.icon.setFixedSize(QSize(64, 64))
-        self.icon.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
-        )
+        self.icon.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         text_box = QVBoxLayout()
         name = _soft_wrap_english(ch.name or "")
         title = _soft_wrap_english(ch.program_title or "")
@@ -67,18 +65,12 @@ class ChannelCard(QFrame):
         text_box.addWidget(self.title_label)
         root.addWidget(self.icon)
         root.addLayout(text_box)
-        self.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
-        )
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         if ch.logo_url:
             self._load_logo(ch.logo_url)
         for child in self.findChildren(QLabel):
-            child.setAttribute(
-                Qt.WidgetAttribute.WA_TransparentForMouseEvents, True
-            )
-        self.setAttribute(
-            Qt.WidgetAttribute.WA_TransparentForMouseEvents, False
-        )
+            child.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         for w in self.findChildren(QWidget):
             w.setCursor(Qt.CursorShape.PointingHandCursor)

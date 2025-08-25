@@ -21,9 +21,7 @@ class SmoothScrollMixin(object):
         )
         props = QScroller.scroller(area.viewport()).scrollerProperties()
         p = QScrollerProperties(props)
-        p.setScrollMetric(
-            QScrollerProperties.ScrollMetric.DecelerationFactor, 0.1
-        )
+        p.setScrollMetric(QScrollerProperties.ScrollMetric.DecelerationFactor, 0.1)
         p.setScrollMetric(
             QScrollerProperties.ScrollMetric.OvershootDragResistanceFactor, 0.15
         )

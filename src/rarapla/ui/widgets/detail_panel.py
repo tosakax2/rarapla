@@ -23,9 +23,7 @@ class DetailPanel(QGroupBox):
         self.desc = QLabel("")
         self.desc.setWordWrap(True)
         self.desc.setTextFormat(Qt.TextFormat.RichText)
-        self.desc.setTextInteractionFlags(
-            Qt.TextInteractionFlag.TextBrowserInteraction
-        )
+        self.desc.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         self.desc.setOpenExternalLinks(True)
         scroll_body = QWidget()
         body_layout = QVBoxLayout(scroll_body)

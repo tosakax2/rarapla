@@ -3,8 +3,10 @@ from PySide6.QtGui import QWheelEvent
 from PySide6.QtWidgets import QScrollArea, QWidget
 
 if TYPE_CHECKING:
+
     class SmoothScrollMixin(Protocol):
         def _smooth_wheel_event(self, e: QWheelEvent) -> None: ...
+
 else:
     from .smooth_scroll_mixin import SmoothScrollMixin
 
