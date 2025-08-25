@@ -78,9 +78,7 @@ class RadikoProxyServer:
             return web.Response(status=404, text="station not found")
         assert self._session is not None
         try:
-            async with self._session.get(
-                resolved.m3u8_url, timeout=HTTP_TIMEOUT
-            ) as upstream:
+            async with self._session.get(resolved.m3u8_url) as upstream:
                 if upstream.status != 200:
                     return web.Response(status=upstream.status, text="upstream error")
                 text = await upstream.text()
@@ -124,7 +122,7 @@ class RadikoProxyServer:
         assert self._session is not None
         for attempt in range(RADIKO_SEGMENT_RETRY_ATTEMPTS):
             try:
-                async with self._session.get(url, timeout=HTTP_TIMEOUT) as upstream:
+                async with self._session.get(url) as upstream:
                     if upstream.status == 200:
                         ctype = upstream.headers.get(
                             "Content-Type", "application/octet-stream"
@@ -229,7 +227,10 @@ class RadikoProxyServer:
         self._site = web.TCPSite(self._runner, self.host, self.port)
         await self._site.start()
         timeout = aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
-        base = dict(self._resolver.http.headers)
+        base: dict[str, str] = {
+            k: v.decode() if isinstance(v, bytes) else str(v)
+            for k, v in self._resolver.http.headers.items()
+        }
         base.setdefault("User-Agent", base.get("User-Agent", "Mozilla/5.0"))
         base.setdefault("Referer", "https://radiko.jp/")
         base.setdefault("Origin", "https://radiko.jp")

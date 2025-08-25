@@ -92,8 +92,8 @@ class MainWindow(QMainWindow):
         self._rb_thread: QThread | None = None
         self._rb_worker: RBSearchWorker | None = None
         self._item_by_id: dict[str, QListWidgetItem] = {}
-        self._pending_channel = None
-        self._current_channel = None
+        self._pending_channel: Channel | None = None
+        self._current_channel: Channel | None = None
         self._build_ui()
         self._connect_signals()
         self.playback = PlaybackController(self.player, self.proxy_base)
