@@ -1,10 +1,10 @@
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 from PySide6.QtGui import QWheelEvent
 from PySide6.QtWidgets import QScrollArea, QWidget
 
 if TYPE_CHECKING:
 
-    class SmoothScrollMixin(Protocol):
+    class SmoothScrollMixin:
         def _smooth_wheel_event(self, e: QWheelEvent) -> None: ...
 
 else:

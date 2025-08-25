@@ -1,7 +1,7 @@
 """Resolve Radiko live stream URLs using Streamlink."""
 
 import requests
-from streamlink import Streamlink
+from streamlink import Streamlink  # type: ignore[attr-defined]
 from rarapla.config import USER_AGENT
 
 
