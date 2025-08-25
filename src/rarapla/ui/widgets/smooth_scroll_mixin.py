@@ -1,21 +1,44 @@
-from PySide6.QtCore import QEasingCurve, QElapsedTimer, QPropertyAnimation, Qt
+from typing import cast
+from PySide6.QtCore import QEasingCurve, QElapsedTimer, QPropertyAnimation, Qt, QObject
 from PySide6.QtGui import QWheelEvent
-from PySide6.QtWidgets import QScroller, QScrollerProperties
+from PySide6.QtWidgets import (
+    QAbstractScrollArea,
+    QScroller,
+    QScrollerProperties,
+    QScrollBar,
+)
 
 
-class SmoothScrollMixin:
-    def __init__(self, *args, **kwargs) -> None:
+__all__ = ["SmoothScrollMixin"]
+
+
+class SmoothScrollMixin(object):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
-        QScroller.grabGesture(self.viewport(), QScroller.LeftMouseButtonGesture)
-        props = QScroller.scroller(self.viewport()).scrollerProperties()
+        area = cast(QAbstractScrollArea, self)
+        QScroller.grabGesture(
+            area.viewport(), QScroller.ScrollerGestureType.LeftMouseButtonGesture
+        )
+        props = QScroller.scroller(area.viewport()).scrollerProperties()
         p = QScrollerProperties(props)
-        p.setScrollMetric(QScrollerProperties.DecelerationFactor, 0.1)
-        p.setScrollMetric(QScrollerProperties.OvershootDragResistanceFactor, 0.15)
-        p.setScrollMetric(QScrollerProperties.OvershootScrollDistanceFactor, 0.15)
-        p.setScrollMetric(QScrollerProperties.FrameRate, QScrollerProperties.Fps60)
-        QScroller.scroller(self.viewport()).setScrollerProperties(p)
-        self._anim = QPropertyAnimation(self.verticalScrollBar(), b"value", self)
-        self._anim.setEasingCurve(QEasingCurve.OutCubic)
+        p.setScrollMetric(
+            QScrollerProperties.ScrollMetric.DecelerationFactor, 0.1
+        )
+        p.setScrollMetric(
+            QScrollerProperties.ScrollMetric.OvershootDragResistanceFactor, 0.15
+        )
+        p.setScrollMetric(
+            QScrollerProperties.ScrollMetric.OvershootScrollDistanceFactor, 0.15
+        )
+        p.setScrollMetric(
+            QScrollerProperties.ScrollMetric.FrameRate,
+            QScrollerProperties.FrameRates.Fps60,
+        )
+        QScroller.scroller(area.viewport()).setScrollerProperties(p)
+        self._anim = QPropertyAnimation(
+            area.verticalScrollBar(), b"value", cast(QObject, self)
+        )
+        self._anim.setEasingCurve(QEasingCurve.Type.OutCubic)
         self._anim.setDuration(140)
         self._pixel_step = 1.0
         self._base_speed = 1.6
@@ -37,12 +60,13 @@ class SmoothScrollMixin:
         self._viewport_ratio = max(0.02, min(0.5, float(ratio)))
 
     def _smooth_wheel_event(self, e: QWheelEvent) -> None:
-        bar = self.verticalScrollBar()
+        area = cast(QAbstractScrollArea, self)
+        bar: QScrollBar = area.verticalScrollBar()
         cur = bar.value()
         boost = 1.0
-        if e.modifiers() & Qt.ShiftModifier:
+        if e.modifiers() & Qt.KeyboardModifier.ShiftModifier:
             boost *= 2.0
-        if e.modifiers() & Qt.AltModifier:
+        if e.modifiers() & Qt.KeyboardModifier.AltModifier:
             boost *= 3.0
         if (
             self._accel_timer.isValid()
@@ -53,7 +77,7 @@ class SmoothScrollMixin:
             self._accel_streak = 0
         self._accel_timer.restart()
         accel_factor = 1.0 + 0.35 * self._accel_streak
-        vh = max(1, self.viewport().height())
+        vh = max(1, area.viewport().height())
         notch_px = int(vh * self._viewport_ratio)
         notch_px = max(self._min_notch_px, min(self._max_notch_px, notch_px))
         pd = e.pixelDelta()

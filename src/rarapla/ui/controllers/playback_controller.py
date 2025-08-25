@@ -1,5 +1,5 @@
 from PySide6.QtCore import QObject, QTimer, Signal
-from PySide6.QtMultimedia import QMediaPlayer, QMediaMetaData
+from PySide6.QtMultimedia import QMediaMetaData, QMediaPlayer
 from rarapla.config import USER_AGENT
 from rarapla.ui.widgets.player_widget import PlayerWidget
 from rarapla.services.icy_watcher import IcyWatcher
@@ -101,13 +101,13 @@ class PlaybackController(QObject):
         if md.isEmpty():
             return
         title = self._first_non_empty(
-            md.stringValue(QMediaMetaData.Title),
-            md.stringValue(QMediaMetaData.Description),
-            md.stringValue(QMediaMetaData.Comment),
+            md.stringValue(QMediaMetaData.Key.Title),
+            md.stringValue(QMediaMetaData.Key.Description),
+            md.stringValue(QMediaMetaData.Key.Comment),
         ).strip()
 
         def _val(name: str) -> str | None:
-            key = getattr(QMediaMetaData, name, None)
+            key = getattr(QMediaMetaData.Key, name, None)
             if key is None:
                 return None
             try:
@@ -171,7 +171,7 @@ class PlaybackController(QObject):
         pass
 
     def _on_player_error(self, err: QMediaPlayer.Error, text: str) -> None:
-        if err == QMediaPlayer.NoError:
+        if err == QMediaPlayer.Error.NoError:
             return
         msg = text or "再生できませんでした"
         self.playbackError.emit(msg)

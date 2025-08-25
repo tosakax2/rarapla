@@ -51,11 +51,15 @@ class NowRefresher(QObject):
 
         def _done(chs: list[Channel]) -> None:
             self.updated.emit(chs)
-            self._thread.quit()
+            t = self._thread
+            if t is not None:
+                t.quit()
 
         def _err(msg: str) -> None:
             self.error.emit(msg)
-            self._thread.quit()
+            t = self._thread
+            if t is not None:
+                t.quit()
 
         self._worker.finished.connect(_done)
         self._worker.error.connect(_err)

@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Any, TypedDict, cast
 from PySide6.QtCore import QThread, QTimer, Qt
 from PySide6.QtGui import QCloseEvent, QShowEvent
 from PySide6.QtWidgets import (
@@ -27,7 +28,14 @@ from rarapla.ui.workers.channel_fetch_worker import ChannelFetchWorker
 from rarapla.ui.workers.program_fetch_worker import ProgramFetchWorker
 from rarapla.ui.workers.rb_search_worker import RBSearchWorker
 
-_DEFAULT_RB_PRESETS: list[dict] = [
+
+class RBPreset(TypedDict, total=False):
+    label: str
+    mode: str
+    query: str | None
+
+
+_DEFAULT_RB_PRESETS: list[RBPreset] = [
     {"label": "Japan", "mode": "jp"},
     {"label": "J-POP", "mode": "tag", "query": "jpop"},
     {"label": "Jazz", "mode": "tag", "query": "jazz"},
@@ -38,7 +46,7 @@ _PRESET_FILE = "rb_presets.json"
 
 class MainWindow(QMainWindow):
 
-    def _load_rb_presets(self) -> list[dict[str, str | None]]:
+    def _load_rb_presets(self) -> list[RBPreset]:
         path = os.path.join(os.getcwd(), _PRESET_FILE)
         if not os.path.isfile(path):
             presets = _DEFAULT_RB_PRESETS.copy()
@@ -53,7 +61,7 @@ class MainWindow(QMainWindow):
                 data = json.load(f) or []
         except Exception:
             return _DEFAULT_RB_PRESETS.copy()
-        out: list[dict[str, str | None]] = []
+        out: list[RBPreset] = []
         for it in data:
             if (
                 isinstance(it, dict)
@@ -61,11 +69,11 @@ class MainWindow(QMainWindow):
                 and (it.get("mode") in ("jp", "tag"))
             ):
                 out.append(
-                    {
-                        "label": it["label"].strip(),
-                        "mode": it["mode"],
-                        "query": (it.get("query") or "").strip() or None,
-                    }
+                    RBPreset(
+                        label=it["label"].strip(),
+                        mode=it["mode"],
+                        query=(it.get("query") or "").strip() or None,
+                    )
                 )
         return out or _DEFAULT_RB_PRESETS[:1]
 
@@ -75,7 +83,7 @@ class MainWindow(QMainWindow):
         self.proxy_base = f"http://{proxy_host}:{proxy_port}"
         self.client = RadikoClient()
         self.rb = RadioBrowserClient()
-        self._rb_presets = self._load_rb_presets()
+        self._rb_presets: list[RBPreset] = self._load_rb_presets()
         self._prog_thread: QThread | None = None
         self._prog_worker: ProgramFetchWorker | None = None
         self._populate_thread: QThread | None = None
@@ -193,7 +201,7 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem(self.list)
             card = ChannelCard(ch)
             item.setSizeHint(card.sizeHint())
-            item.setData(Qt.UserRole, ch)
+            item.setData(Qt.ItemDataRole.UserRole, ch)
             self.list.addItem(item)
             self.list.setItemWidget(item, card)
             card.setProperty("selected", False)
@@ -238,7 +246,7 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem(self.list)
             card = ChannelCard(ch)
             item.setSizeHint(card.sizeHint())
-            item.setData(Qt.UserRole, ch)
+            item.setData(Qt.ItemDataRole.UserRole, ch)
             self.list.addItem(item)
             self.list.setItemWidget(item, card)
             card.setProperty("selected", False)
@@ -267,7 +275,7 @@ class MainWindow(QMainWindow):
             card.style().unpolish(card)
             card.style().polish(card)
             card.update()
-        ch = cur.data(Qt.UserRole)
+        ch = cast(Channel, cur.data(Qt.ItemDataRole.UserRole))
         self._pending_channel = ch
         self._switch_timer.stop()
         self._switch_timer.start(self._switch_delay_ms)
@@ -319,7 +327,7 @@ class MainWindow(QMainWindow):
         cur_item = self.list.currentItem()
         if not cur_item:
             return
-        current = cur_item.data(Qt.UserRole)
+        current = cast(Channel, cur_item.data(Qt.ItemDataRole.UserRole))
         if current.id != ch.id:
             return
         title = program.title if program and program.title else ch.program_title
@@ -348,30 +356,34 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Channel refresh failed: {msg}", 3000)
 
     def _apply_now_diff(self, channels: list[Channel]) -> None:
-        new_map: dict[str, object] = {ch.id: ch for ch in channels}
+        new_map: dict[str, Channel] = {ch.id: ch for ch in channels}
         cur_item = self.list.currentItem()
-        cur_id = cur_item.data(Qt.UserRole).id if cur_item else None
+        cur_id = (
+            cast(Channel, cur_item.data(Qt.ItemDataRole.UserRole)).id if cur_item else None
+        )
         cur_title_before = (
-            cur_item.data(Qt.UserRole).program_title or "" if cur_item else None
+            cast(Channel, cur_item.data(Qt.ItemDataRole.UserRole)).program_title or ""
+            if cur_item
+            else None
         )
         for sid, item in self._item_by_id.items():
             new_ch = new_map.get(sid)
             if not new_ch:
                 continue
-            old_ch = item.data(Qt.UserRole)
+            old_ch = cast(Channel, item.data(Qt.ItemDataRole.UserRole))
             if (
                 old_ch.name != new_ch.name
                 or old_ch.program_title != new_ch.program_title
                 or old_ch.logo_url != new_ch.logo_url
             ):
-                item.setData(Qt.UserRole, new_ch)
+                item.setData(Qt.ItemDataRole.UserRole, new_ch)
                 card = self.list.itemWidget(item)
                 if isinstance(card, ChannelCard):
                     card.update_content(new_ch)
         if cur_item and cur_id:
             updated = self._item_by_id.get(cur_id)
             if updated:
-                ch_after = updated.data(Qt.UserRole)
+                ch_after = cast(Channel, updated.data(Qt.ItemDataRole.UserRole))
                 cur_title_after = ch_after.program_title or ""
                 if cur_title_before != cur_title_after:
                     self.detail.set_loading(cur_title_after)
@@ -402,7 +414,7 @@ class MainWindow(QMainWindow):
         cur_item = self.list.currentItem()
         if not cur_item:
             return
-        ch = cur_item.data(Qt.UserRole)
+        ch = cast(Channel, cur_item.data(Qt.ItemDataRole.UserRole))
         if not getattr(ch, "stream_url", None):
             return
         prog_title = (title or "").strip()
@@ -414,7 +426,7 @@ class MainWindow(QMainWindow):
             program_image=ch.program_image,
             stream_url=ch.stream_url,
         )
-        cur_item.setData(Qt.UserRole, updated)
+        cur_item.setData(Qt.ItemDataRole.UserRole, updated)
         card = self.list.itemWidget(cur_item)
         if isinstance(card, ChannelCard):
             card.update_content(updated)
@@ -424,7 +436,7 @@ class MainWindow(QMainWindow):
 
     def _format_rb_meta(self, meta: object) -> str:
         try:
-            items = dict(meta).items()
+            items = dict(cast(Any, meta)).items()
         except Exception:
             return ""
         rows: list[str] = []
@@ -450,7 +462,7 @@ class MainWindow(QMainWindow):
             "<span style='color:#e57373; font-weight:bold;'>"
             "⚠ 再生できませんでした: " + msg + "</span>"
         )
-        self.detail.set_program(self.detail.title.text(), html, None)
+        self.detail.set_program(self.detail.title_label.text(), html, None)
         self.statusBar().showMessage(f"Playback error: {msg}", 7000)
 
     def showEvent(self, e: QShowEvent) -> None:
