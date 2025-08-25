@@ -6,7 +6,7 @@ from rarapla.services.icy_watcher import IcyWatcher
 
 
 class PlaybackController(QObject):
-    streamTitleChanged = Signal(str, object)
+    streamTitleChanged = Signal(str, dict)
     playbackError = Signal(str)
 
     def __init__(self, player: PlayerWidget, proxy_base: str) -> None:
@@ -161,7 +161,7 @@ class PlaybackController(QObject):
         self._icy.wait(3000)
         self._icy = None
 
-    def _on_icy_meta(self, title: str, meta: dict) -> None:
+    def _on_icy_meta(self, title: str, meta: dict[str, str]) -> None:
         self.streamTitleChanged.emit(title, meta)
 
     def _on_icy_not_supported(self, reason: str) -> None:
