@@ -11,6 +11,7 @@ class DummyResp:
     def raise_for_status(self) -> None:
         if self.status_code >= 400:
             import requests
+
             raise requests.HTTPError(self.status_code)
 
     def json(self):
@@ -24,7 +25,12 @@ class DummySession:
         self.last_params: dict[str, str] | None = None
         self.headers: dict[str, str] = {}
 
-    def get(self, url: str, params: dict[str, str] | None = None, timeout: float | None = None):
+    def get(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ):
         self.last_url = url
         self.last_params = params
         return DummyResp(self.json_data)
