@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 from rarapla.data.radiko_client import RadikoClient
 from rarapla.data.radio_browser_client import RadioBrowserClient
 from rarapla.models.channel import Channel
+from rarapla.models.program import Program
 from rarapla.ui.controllers.now_refresher import NowRefresher
 from rarapla.config import NOW_REFRESH_INTERVAL_MS
 from rarapla.ui.controllers.playback_controller import PlaybackController
@@ -37,7 +38,7 @@ _PRESET_FILE = "rb_presets.json"
 
 class MainWindow(QMainWindow):
 
-    def _load_rb_presets(self) -> list[dict]:
+    def _load_rb_presets(self) -> list[dict[str, str | None]]:
         path = os.path.join(os.getcwd(), _PRESET_FILE)
         if not os.path.isfile(path):
             presets = _DEFAULT_RB_PRESETS.copy()
@@ -52,7 +53,7 @@ class MainWindow(QMainWindow):
                 data = json.load(f) or []
         except Exception:
             return _DEFAULT_RB_PRESETS.copy()
-        out: list[dict] = []
+        out: list[dict[str, str | None]] = []
         for it in data:
             if (
                 isinstance(it, dict)
@@ -187,7 +188,7 @@ class MainWindow(QMainWindow):
         if t is not None:
             t.deleteLater()
 
-    def _on_channels_loaded(self, channels: list) -> None:
+    def _on_channels_loaded(self, channels: list[Channel]) -> None:
         for ch in channels:
             item = QListWidgetItem(self.list)
             card = ChannelCard(ch)
@@ -232,7 +233,7 @@ class MainWindow(QMainWindow):
         self._rb_worker = w
         t.start()
 
-    def _on_rb_loaded(self, channels: list) -> None:
+    def _on_rb_loaded(self, channels: list[Channel]) -> None:
         for ch in channels:
             item = QListWidgetItem(self.list)
             card = ChannelCard(ch)
@@ -314,7 +315,7 @@ class MainWindow(QMainWindow):
         self._prog_worker = worker
         QTimer.singleShot(100, lambda: self.playback.prepare_media(ch.id))
 
-    def _on_program_loaded(self, ch, program) -> None:
+    def _on_program_loaded(self, ch: Channel, program: Program | None) -> None:
         cur_item = self.list.currentItem()
         if not cur_item:
             return
@@ -346,7 +347,7 @@ class MainWindow(QMainWindow):
     def _on_channel_refresh_error(self, msg: str) -> None:
         self.statusBar().showMessage(f"Channel refresh failed: {msg}", 3000)
 
-    def _apply_now_diff(self, channels: list) -> None:
+    def _apply_now_diff(self, channels: list[Channel]) -> None:
         new_map: dict[str, object] = {ch.id: ch for ch in channels}
         cur_item = self.list.currentItem()
         cur_id = cur_item.data(Qt.UserRole).id if cur_item else None
@@ -376,7 +377,7 @@ class MainWindow(QMainWindow):
                     self.detail.set_loading(cur_title_after)
                     self._request_program_detail(ch_after)
 
-    def _request_program_detail(self, ch) -> None:
+    def _request_program_detail(self, ch: Channel) -> None:
         if self._prog_worker:
             self._prog_worker.cancel()
         worker = ProgramFetchWorker(self.client, ch)

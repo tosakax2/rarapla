@@ -4,7 +4,7 @@ from rarapla.models.channel import Channel
 
 
 class ProgramFetchWorker(QObject):
-    finished = Signal(object, object)
+    finished = Signal(Channel, object)
     error = Signal(str)
     cancelled = Signal()
 
